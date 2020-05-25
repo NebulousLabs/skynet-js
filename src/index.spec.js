@@ -123,6 +123,7 @@ describe("uploadDirectory", () => {
 describe("parseSkylink", () => {
   it("should correctly parse skylink out of different strings", () => {
     expect(parseSkylink(skylink)).toEqual(skylink);
+    expect(parseSkylink(`sia:${skylink}`)).toEqual(skylink);
     expect(parseSkylink(`sia://${skylink}`)).toEqual(skylink);
     expect(parseSkylink(`${portalUrl}/${skylink}`)).toEqual(skylink);
     expect(parseSkylink(`${portalUrl}/${skylink}/foo/bar`)).toEqual(skylink);

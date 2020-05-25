@@ -87,7 +87,7 @@ export function getUrl(portalUrl, skylink, options = {}) {
 
 const SKYLINK_MATCHER = "(?<skylink>[a-zA-Z0-9_-]{46})";
 const SKYLINK_DIRECT_REGEX = new RegExp(`^${SKYLINK_MATCHER}$`);
-const SKYLINK_SIA_PREFIXED_REGEX = new RegExp(`^sia://${SKYLINK_MATCHER}$`);
+const SKYLINK_SIA_PREFIXED_REGEX = new RegExp(`^sia:(//)?${SKYLINK_MATCHER}$`);
 const SKYLINK_PATHNAME_REGEX = new RegExp(`^/${SKYLINK_MATCHER}`);
 
 export function parseSkylink(skylink = "") {
@@ -97,7 +97,8 @@ export function parseSkylink(skylink = "") {
   const matchDirect = skylink.match(SKYLINK_DIRECT_REGEX);
   if (matchDirect) return matchDirect.groups.skylink;
 
-  // check for skylink prefixed with sia:// and extract it
+  // check for skylink prefixed with sia: or sia:// and extract it
+  // example: sia:XABvi7JtJbQSMAcDwnUnmp2FKDPjg8_tTTFP4BwMSxVdEg
   // example: sia://XABvi7JtJbQSMAcDwnUnmp2FKDPjg8_tTTFP4BwMSxVdEg
   const matchSiaPrefixed = skylink.match(SKYLINK_SIA_PREFIXED_REGEX);
   if (matchSiaPrefixed) return matchSiaPrefixed.groups.skylink;

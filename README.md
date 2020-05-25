@@ -163,6 +163,7 @@ Use the `parseSkylink` to extract skylink from a string.
 Currently supported string types are:
 
 - direct skylink string, example "XABvi7JtJbQSMAcDwnUnmp2FKDPjg8_tTTFP4BwMSxVdEg"
+- sia: prefixed string, example "sia:XABvi7JtJbQSMAcDwnUnmp2FKDPjg8_tTTFP4BwMSxVdEg"
 - sia:// prefixed string, example "sia://XABvi7JtJbQSMAcDwnUnmp2FKDPjg8_tTTFP4BwMSxVdEg"
 - skylink from url, example "https://siasky.net/XABvi7JtJbQSMAcDwnUnmp2FKDPjg8_tTTFP4BwMSxVdEg"
 
