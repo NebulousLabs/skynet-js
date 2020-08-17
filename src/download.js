@@ -11,7 +11,7 @@ SkynetClient.prototype.download = function (skylink, customOptions = {}) {
   const opts = { ...defaultDownloadOptions, ...customOptions, download: true };
   const url = this.getDownloadUrl(skylink, opts);
 
-  window.open(url, "_blank");
+  window.location.href = url;
 };
 
 SkynetClient.prototype.getDownloadUrl = function (skylink, customOptions = {}) {
