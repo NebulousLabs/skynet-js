@@ -49,6 +49,8 @@ export class SkynetClient {
 
           config.onUploadProgress(progress, { loaded, total });
         },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
     });
   }
 }
