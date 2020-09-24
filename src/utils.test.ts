@@ -1,6 +1,7 @@
 import {
   addUrlQuery,
   defaultSkynetPortalUrl,
+  fillRandUint8Array,
   makeUrl,
   parseSkylink,
   trimUriPrefix,
@@ -19,6 +20,20 @@ describe("addUrlQuery", () => {
     expect(addUrlQuery(`${portalUrl}/path/`, { download: true })).toEqual(`${portalUrl}/path/?download=true`);
     expect(addUrlQuery(`${portalUrl}/skynet/`, { foo: 1, bar: 2 })).toEqual(`${portalUrl}/skynet/?foo=1&bar=2`);
     expect(addUrlQuery(`${portalUrl}/`, { attachment: true })).toEqual(`${portalUrl}/?attachment=true`);
+  });
+});
+
+describe("fillRandUint8Array", () => {
+  it("should generate random Uint8Arrays", () => {
+    const array1 = new Uint8Array(256);
+    const array2 = new Uint8Array(256);
+
+    expect(array1 === array2);
+
+    fillRandUint8Array(array1);
+    fillRandUint8Array(array2);
+
+    expect( array1 !== array2);
   });
 });
 
