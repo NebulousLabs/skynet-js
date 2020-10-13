@@ -31,7 +31,7 @@ export type ciphertext = Uint8Array;
 
 export interface CipherKey {
   key(): Uint8Array;
-  decryptBytes(ct: ciphertext): Uint8Array;
+  decryptBytes(ct: ciphertext): Promise<Uint8Array>;
 }
 
 /**
@@ -39,14 +39,14 @@ export interface CipherKey {
  */
 export function newSiaKey(ct: cipherType, entropy: Uint8Array): CipherKey {
   if (areEqualUint8Arrays(ct, typePlain)) {
-	return new PlainTextCipherKey();
+    return new PlainTextCipherKey();
   }
   // case TypeTwofish:
   //   return newTwofishKey(entropy);
   // case TypeThreefish:
   //   return newThreefishKey(entropy);
   if (areEqualUint8Arrays(ct, typeXChaCha20)) {
-	return new XChaCha20CipherKey(entropy);
+    return new XChaCha20CipherKey(entropy);
   }
   throw new Error(errInvalidCipherType);
 }
@@ -56,14 +56,14 @@ export function newSiaKey(ct: cipherType, entropy: Uint8Array): CipherKey {
  */
 export function generateSiaKey(ct: cipherType): CipherKey {
   if (areEqualUint8Arrays(ct, typePlain)) {
-	return new PlainTextCipherKey();
+    return new PlainTextCipherKey();
   }
   // case TypeTwofish:
   //   return newTwofishKey(entropy);
   // case TypeThreefish:
   //   return newThreefishKey(entropy);
   if (areEqualUint8Arrays(ct, typeXChaCha20)) {
-	return new XChaCha20CipherKey();
+    return new XChaCha20CipherKey();
   }
   throw new Error(errInvalidCipherType);
 }

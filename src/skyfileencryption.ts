@@ -1,5 +1,5 @@
-import { skykeyIDLen } from "./skykey/skykey";
-import { keysByID, keyByID, errNoSkykeysWithThatID } from "./skykey/manager";
+import { Skykey, skykeyIDLen } from "./skykey/skykey";
+import { skykeyManager, errNoSkykeysWithThatID } from "./skykey/manager";
 import { decode, SkyfileLayout } from "./skyfile";
 import { sectorSize } from "./constants";
 import { xNonceSize } from "./crypto/xchacha20";
@@ -19,11 +19,12 @@ const errNoSkykeyMatchesSkyfileEncryptionID = "Unable to find matching skykey fo
  * checkSkyfileEncryptionIDMatch tries to find a Skykey that can decrypt the
  * identifier and be used for decrypting the associated skyfile.
  */
-function checkSkyfileEncryptionIDMatch(encryptionIdentifier: Uint8Array, nonce: Uint8Array) {
-  for (let skykey of keysByID.keys()) {
+async function checkSkyfileEncryptionIDMatch(encryptionIdentifier: Uint8Array, nonce: Uint8Array): Promise<Skykey> {
+  const allSkykeys = skykeyManager.skykeys();
+  for (let skykey of allSkykeys) {
     let matches = false;
     try {
-      matches = skykey.matchesSkyfileEncryptionID(encryptionIdentifier, nonce);
+      matches = await skykey.matchesSkyfileEncryptionID(encryptionIdentifier, nonce);
     } catch (error) {
       continue;
     }
@@ -39,7 +40,7 @@ function checkSkyfileEncryptionIDMatch(encryptionIdentifier: Uint8Array, nonce: 
  * decrypt the baseSector in-place. It returns the file-specific skykey to be
  * used for decrypting the rest of the associated skyfile.
  */
-function decryptBaseSector(baseSector: Uint8Array) {
+async function decryptBaseSector(baseSector: Uint8Array) {
   // Sanity check - baseSector should not be more than modules.SectorSize.
   // Note that the base sector may be smaller in the event of a packed
   // skyfile.
@@ -62,19 +63,19 @@ function decryptBaseSector(baseSector: Uint8Array) {
   let masterSkykey;
   try {
     // Try to get the skykey associated with that ID.
-    masterSkykey = keyByID(keyID);
+    masterSkykey = skykeyManager.keyByID(keyID);
   } catch (error) {
     // If the ID is unknown, use the key ID as an encryption identifier and try
     // finding the associated skykey.
     if (error.message.contains(errNoSkykeysWithThatID)) {
-      masterSkykey = checkSkyfileEncryptionIDMatch(keyID, nonce);
+      masterSkykey = await checkSkyfileEncryptionIDMatch(keyID, nonce);
     } else {
       throw new Error(`${error.message}; "Unable to find associated skykey"`);
     }
   }
 
   // Derive the file-specific key.
-  const fileSkykey = masterSkykey.SubkeyWithNonce(masterSkykey, nonce);
+  const fileSkykey = masterSkykey.SubkeyWithNonce(nonce);
 
   // Derive the base sector subkey and use it to decrypt the base sector.
   const baseSectorKey = fileSkykey.DeriveSubkey(baseSectorNonceDerivation);
@@ -82,7 +83,7 @@ function decryptBaseSector(baseSector: Uint8Array) {
   // Get the cipherkey.
   const cipherKey = baseSectorKey.CipherKey();
 
-  cipherKey.DecryptBytesInPlace(baseSector, 0);
+  await cipherKey.DecryptBytesInPlace(baseSector, 0);
 
   // Save the visible-by-default fields of the baseSector's layout.
   const version = skyfileLayout.version;

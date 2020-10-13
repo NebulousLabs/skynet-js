@@ -41,8 +41,8 @@ export const typePrivateID = 2;
 /**
  * Used as a prefix when hashing Skykeys to compute their ID.
  */
-const skykeySpecifier               = types.newSpecifier("Skykey");
-const skyfileEncryptionIDSpecifier  = types.newSpecifier("SkyfileEncID");
+const skykeySpecifier = types.newSpecifier("Skykey");
+const skyfileEncryptionIDSpecifier = types.newSpecifier("SkyfileEncID");
 const skyfileEncryptionIDDerivation = types.newSpecifier("SFEncIDDerivPath");
 
 export type skykeyType = number;
@@ -50,10 +50,10 @@ export type skykeyType = number;
 export type skykeyID = Uint8Array;
 
 export function cipherType(t: skykeyType): crypto.cipherType {
-  if (t == typePublicID || t == typePrivateID ) {
-	return crypto.typeXChaCha20
+  if (t == typePublicID || t == typePrivateID) {
+    return crypto.typeXChaCha20;
   }
-  return crypto.typeInvalid
+  return crypto.typeInvalid;
 }
 
 /**
@@ -79,7 +79,7 @@ export class Skykey {
   ID() {
     let entropy = this.entropy;
 
-    if (this.keyType == typePublicID || this.keyType, typePrivateID) {
+    if ((this.keyType == typePublicID || this.keyType, typePrivateID)) {
       // Ignore the nonce for this type because the nonce is different for each
       // file-specific subkey.
       entropy = this.entropy.slice(0, chacha.keySize);
@@ -95,7 +95,7 @@ export class Skykey {
    * Returns the crypto.CipherType used by this Skykey.
    */
   CipherType(): crypto.cipherType {
-	return cipherType(this.keyType);
+    return cipherType(this.keyType);
   }
 
   /**
@@ -105,10 +105,10 @@ export class Skykey {
    * new file is uploaded.
    */
   GenerateFileSpecificSubkey(): Skykey {
-	// Generate a new random nonce.
-	const nonce = new Uint8Array(chacha.xNonceSize)
-	fillRandUint8Array(nonce);
-	return this.SubkeyWithNonce(nonce)
+    // Generate a new random nonce.
+    const nonce = new Uint8Array(chacha.xNonceSize);
+    fillRandUint8Array(nonce);
+    return this.SubkeyWithNonce(nonce);
   }
 
   /**
@@ -148,7 +148,7 @@ export class Skykey {
    * Returns true if and only if the skykey was the one used with this nonce to
    * create the encryptionID.
    */
-  matchesSkyfileEncryptionID(encryptionID: Uint8Array, nonce: Uint8Array) {
+  async matchesSkyfileEncryptionID(encryptionID: Uint8Array, nonce: Uint8Array): Promise<boolean> {
     if (encryptionID.length != skykeyIDLen || nonce.length != chacha.xNonceSize) {
       throw new Error(errInvalidIDorNonceLength);
     }
@@ -163,7 +163,7 @@ export class Skykey {
 
     // Decrypt the identifier and check that it.
     const cipherKey = encIDSkykey.CipherKey();
-    const plaintextBytes = cipherKey.decryptBytes(encryptionID);
+    const plaintextBytes = await cipherKey.decryptBytes(encryptionID);
     if (areEqualUint8Arrays(plaintextBytes, skyfileEncryptionIDSpecifier)) {
       return true;
     }

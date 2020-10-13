@@ -5,7 +5,7 @@ export class PlainTextCipherKey {
     return new Uint8Array();
   }
 
-  decryptBytes(ct: ciphertext): Uint8Array {
+  async decryptBytes(ct: ciphertext): Promise<Uint8Array> {
     return new Uint8Array(ct);
   }
 }

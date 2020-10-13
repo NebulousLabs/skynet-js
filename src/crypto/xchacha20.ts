@@ -1,11 +1,14 @@
-import { XChaCha20 } from "xchacha20-js";
+// TODO: Add types to xchacha20 and remove the below line.
+// @ts-ignore
+import { XChaCha20 } from "../xchacha20/index";
 import { concatUint8Arrays, randomInt } from "../utils";
 import { ciphertext } from "./crypto";
+import { Buffer } from "buffer";
 
 export const keySize = 32;
 export const xNonceSize = 24;
 
-let xcha20 = new XChaCha20;
+let xcha20 = new XChaCha20();
 
 export class XChaCha20CipherKey {
   cipherkey: Uint8Array;
@@ -16,18 +19,18 @@ export class XChaCha20CipherKey {
    */
   constructor(entropy?: Uint8Array) {
     if (entropy === undefined) {
-      entropy = new Uint8Array(keySize+xNonceSize);
+      entropy = new Uint8Array(keySize + xNonceSize);
       for (let i = 0; i < entropy.length; i++) {
         entropy[i] = randomInt(0, 256);
       }
     }
-    if (entropy.length != keySize+xNonceSize) {
+    if (entropy.length != keySize + xNonceSize) {
       throw new Error("Incorrect entropy length for XChaCha20 cipher");
     }
 
     // Copy entropy into key and nonce values.
     this.cipherkey = entropy.slice(0, keySize);
-    this.nonce = entropy.slice(keySize, xNonceSize);
+    this.nonce = entropy.slice(keySize, keySize + xNonceSize);
   }
 
   /**
@@ -41,8 +44,26 @@ export class XChaCha20CipherKey {
   /**
    * Decrypts a ciphertext created by EncryptPiece.
    */
-  decryptBytes(ct: ciphertext): Uint8Array {
-    // Reset the cipher key stream.
-    return xcha20.streamXorIc(ct, this.nonce, this.cipherkey, 0);
+  async decryptBytes(ct: ciphertext): Promise<Uint8Array> {
+    const plaintext = await xcha20.streamXorIc(
+      Buffer.from(ct),
+      Buffer.from(this.nonce),
+      Buffer.from(this.cipherkey),
+      0 // Reset the cipher key stream.
+    );
+    return new Uint8Array(plaintext.buffer);
+  }
+
+  /**
+   * Encrypts arbitrary data using the XChaCha20 key.
+   */
+  async encryptBytes(plaintext: Uint8Array): Promise<ciphertext> {
+    const ct = await xcha20.streamXorIc(
+      Buffer.from(plaintext),
+      Buffer.from(this.nonce),
+      Buffer.from(this.cipherkey),
+      0 // Reset the cipher key stream.
+    );
+    return new Uint8Array(ct.buffer);
   }
 }

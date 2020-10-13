@@ -33,7 +33,7 @@ describe("fillRandUint8Array", () => {
     fillRandUint8Array(array1);
     fillRandUint8Array(array2);
 
-    expect( array1 !== array2);
+    expect(array1 !== array2);
   });
 });
 

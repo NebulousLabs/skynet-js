@@ -81,7 +81,7 @@ export class SkynetClient {
       auth: config.APIKey && { username: "", password: config.APIKey },
       onUploadProgress:
         config.onUploadProgress &&
-        function ({ loaded, total }: { loaded: number, total: number }) {
+        function ({ loaded, total }: { loaded: number; total: number }) {
           const progress = loaded / total;
 
           config.onUploadProgress(progress, { loaded, total });

@@ -1,5 +1,5 @@
 import JSBI from "jsbi";
-import './bigint-buffer';
+import "./bigint-buffer";
 
 const { BigInt } = JSBI;
 
@@ -53,13 +53,13 @@ export class SkyfileLayout {
     const bytes = new Uint8Array(buffer);
     bytes.set(this.cipherType, offset);
     offset += this.cipherType.length;
-    bytes.set(this.keyData, offset)
+    bytes.set(this.keyData, offset);
     offset += this.keyData.length;
 
     // Sanity check. If this check fails, encode() does not match the
     // SkyfileLayoutSize.
     if (offset != skyfileLayoutSize) {
-	throw new Error(`layout size ${skyfileLayoutSize} does not match the amount of data decoded ${offset}`);
+      throw new Error(`layout size ${skyfileLayoutSize} does not match the amount of data decoded ${offset}`);
     }
 
     return bytes;
@@ -72,7 +72,7 @@ export class SkyfileLayout {
 export function decode(bytes: Uint8Array): SkyfileLayout {
   // DataView allows us to access mixed-format data from the same buffer.
   const b = new DataView(bytes.buffer);
-  let sl = new SkyfileLayout;
+  let sl = new SkyfileLayout();
   let offset = 0;
 
   sl.version = b.getUint8(offset);
@@ -95,7 +95,7 @@ export function decode(bytes: Uint8Array): SkyfileLayout {
   // Sanity check. If this check fails, decode() does not match the
   // SkyfileLayoutSize.
   if (offset != skyfileLayoutSize) {
-	throw new Error(`layout size ${skyfileLayoutSize} does not match the amount of data decoded ${offset}`);
+    throw new Error(`layout size ${skyfileLayoutSize} does not match the amount of data decoded ${offset}`);
   }
 
   return sl;

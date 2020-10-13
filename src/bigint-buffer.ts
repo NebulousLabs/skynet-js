@@ -11,13 +11,11 @@ declare global {
   }
 }
 
-DataView.prototype.setUint64 = function setUint64(
-  byteOffset: number, value: typeof BigInt, littleEndian: boolean
-) {
-  if (typeof value === 'bigint' && typeof this.setBigUint64 !== 'undefined') {
+DataView.prototype.setUint64 = function setUint64(byteOffset: number, value: typeof BigInt, littleEndian: boolean) {
+  if (typeof value === "bigint" && typeof this.setBigUint64 !== "undefined") {
     // the original native implementation for bigint
     this.setBigUint64(byteOffset, value, littleEndian);
-  } else if (value.constructor === JSBI && typeof value.sign === 'bigint' && typeof this.setBigUint64 !== 'undefined') {
+  } else if (value.constructor === JSBI && typeof value.sign === "bigint" && typeof this.setBigUint64 !== "undefined") {
     // JSBI wrapping a native bigint
     this.setBigUint64(byteOffset, value.sign, littleEndian);
   } else if (value.constructor === JSBI) {
@@ -30,11 +28,11 @@ DataView.prototype.setUint64 = function setUint64(
     this.setUint32(byteOffset + (littleEndian ? 0 : 4), lowWord, littleEndian);
     this.setUint32(byteOffset + (littleEndian ? 4 : 0), highWord, littleEndian);
   } else {
-    throw TypeError('Value needs to be BigInt ot JSBI');
+    throw TypeError("Value needs to be BigInt ot JSBI");
   }
 };
 DataView.prototype.getUint64 = function getUint64(byteOffset: number, littleEndian: boolean) {
-  if (typeof this.getBigUint64 !== 'undefined') {
+  if (typeof this.getBigUint64 !== "undefined") {
     return this.getBigUint64(byteOffset, littleEndian);
   }
   let lowWord = 0;

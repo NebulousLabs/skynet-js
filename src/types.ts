@@ -14,7 +14,7 @@ const specifierMap = new Set();
 export function newSpecifier(name: string): Uint8Array {
   validateSpecifier(name);
   if (specifierMap.has(name)) {
-	throw new Error(`ERROR: specifier name already in use: ${name}`);
+    throw new Error(`ERROR: specifier name already in use: ${name}`);
   }
   specifierMap.add(name);
   const specifier = new Uint8Array(specifierLen);
@@ -28,10 +28,10 @@ export function newSpecifier(name: string): Uint8Array {
  */
 function validateSpecifier(name: string) {
   if (!isASCII(name)) {
-	throw new Error("ERROR: specifier has to be ASCII");
+    throw new Error("ERROR: specifier has to be ASCII");
   }
   if (name.length > specifierLen) {
-	throw new Error("ERROR: specifier max length exceeded");
+    throw new Error("ERROR: specifier max length exceeded");
   }
 }
 

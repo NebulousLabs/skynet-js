@@ -111,7 +111,15 @@ export function concatUint8Arrays(array1: Uint8Array, array2: Uint8Array): Uint8
 
 // From https://stackoverflow.com/a/60818105/6085242
 export function areEqualUint8Arrays(array1: Uint8Array, array2: Uint8Array): boolean {
-  return array1.length === array2.length && array1.every((value, index) => value === array2[index]);
+  if (array1.length != array2.length) {
+    return false;
+  }
+  for (let i = 0; i < array1.length; i++) {
+    if (array1[i] != array2[i]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // From http://www.java2s.com/example/nodejs/data-type/convert-ascii-to-uint8-array.html
@@ -120,8 +128,8 @@ export function areEqualUint8Arrays(array1: Uint8Array, array2: Uint8Array): boo
  */
 export function asciiToUint8Array(str: string): Uint8Array {
   let chars = [];
-  for (let i = 0; i < str.length; ++i){
-    chars.push(str.charCodeAt(i));/*from  w  ww. j  a  v  a  2s.c o  m*/
+  for (let i = 0; i < str.length; ++i) {
+    chars.push(str.charCodeAt(i)); /*from  w  ww. j  a  v  a  2s.c o  m*/
   }
   return new Uint8Array(chars);
 }
@@ -132,7 +140,7 @@ export function asciiToUint8Array(str: string): Uint8Array {
  * (exclusive) ([low, high)).
  */
 export function randomInt(low: number, high: number): number {
-  return Math.floor(Math.random() * (high - low) + low)
+  return Math.floor(Math.random() * (high - low) + low);
 }
 
 export function fillRandUint8Array(array: Uint8Array) {

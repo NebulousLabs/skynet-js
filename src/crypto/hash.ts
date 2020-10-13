@@ -13,7 +13,7 @@ function NewHash() {
  */
 export function HashAll(...args: any[]): Uint8Array {
   const h = NewHash();
-  for (let i=0; i < args.length; i++) {
+  for (let i = 0; i < args.length; i++) {
     blake.blake2bUpdate(h, args[i]);
   }
   return blake.blake2bFinal(h);
