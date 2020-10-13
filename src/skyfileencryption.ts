@@ -6,6 +6,7 @@ import { xNonceSize } from "./crypto/xchacha20";
 import { typeXChaCha20 } from "./crypto/crypto";
 import * as types from "./types";
 import { areEqualUint8Arrays } from "./utils";
+import JSBI from "jsbi";
 
 /**
  * baseSectorNonceDerivation is the specifier used to derive a nonce for base
@@ -14,6 +15,47 @@ import { areEqualUint8Arrays } from "./utils";
 const baseSectorNonceDerivation = types.newSpecifier("BaseSectorNonce");
 
 const errNoSkykeyMatchesSkyfileEncryptionID = "Unable to find matching skykey for public ID encryption";
+
+const skyfileEncryptedHeaderSize = 2048;
+
+const skyfileEncryptedPaddingGrowthThreshold = JSBI.leftShift(JSBI.BigInt(1), JSBI.BigInt(20)); // 1 MiB
+
+export function decryptFile(file: File): File {
+  const fileContents = file.arrayBuffer();
+}
+
+export function encryptFile(file: File, skykey: Skykey): File {
+  const fileSpecificSubkey = skykey.generateFileSpecificSubkey();
+
+  const fileContents = file.arrayBuffer();
+}
+
+export function encryptionEnabled(opts: any): boolean {
+  return (opts.skykeyName != "" || opts.skykeyID != "");
+}
+
+function padFileForEncryption() {
+}
+
+export function padFilesize(size: typeof JSBI.BigInt): typeof JSBI.BigInt {
+  let i = JSBI.BigInt(skyfileEncryptedHeaderSize); // Minimum size for an encrypted file.
+
+  for (; JSBI.lessThan(i, skyfileEncryptedPaddingGrowthThreshold); i = JSBI.multiply(i, JSBI.BigInt(2))) {
+    if (JSBI.lessThanOrEqual(size, i)) {
+      return i;
+    }
+  }
+
+  for (;; i = JSBI.add(i, JSBI.divide(i, JSBI.BigInt(4)))) {
+    if (JSBI.lessThanOrEqual(size, i)) {
+      return i;
+    }
+  }
+}
+
+/**
+ * NOTE: Below functions are not currently used.
+ */
 
 /**
  * checkSkyfileEncryptionIDMatch tries to find a Skykey that can decrypt the
@@ -75,15 +117,15 @@ async function decryptBaseSector(baseSector: Uint8Array) {
   }
 
   // Derive the file-specific key.
-  const fileSkykey = masterSkykey.SubkeyWithNonce(nonce);
+  const fileSkykey = masterSkykey.subkeyWithNonce(nonce);
 
   // Derive the base sector subkey and use it to decrypt the base sector.
-  const baseSectorKey = fileSkykey.DeriveSubkey(baseSectorNonceDerivation);
+  const baseSectorKey = fileSkykey.deriveSubkey(baseSectorNonceDerivation);
 
   // Get the cipherkey.
-  const cipherKey = baseSectorKey.CipherKey();
+  const cipherKey = baseSectorKey.cipherKey();
 
-  await cipherKey.DecryptBytesInPlace(baseSector, 0);
+  await cipherKey.decryptBytesInPlace(baseSector, 0);
 
   // Save the visible-by-default fields of the baseSector's layout.
   const version = skyfileLayout.version;

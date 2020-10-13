@@ -1,10 +1,14 @@
+import { skykeyManager } from "./skykey/manager";
 import { defaultOptions, uriSkynetPrefix } from "./utils";
+import { encryptFile, encryptionEnabled } from "./skyfileencryption";
 
 const defaultUploadOptions = {
   ...defaultOptions("/skynet/skyfile"),
   portalFileFieldname: "file",
   portalDirectoryFileFieldname: "files[]",
   customFilename: "",
+  skykeyID: "",
+  skykeyName: "",
 };
 
 export async function uploadFile(file: File, customOptions = {}): Promise<string> {
@@ -15,6 +19,16 @@ export async function uploadFile(file: File, customOptions = {}): Promise<string
 
 export async function uploadFileRequest(file: File, customOptions = {}) {
   const opts = { ...defaultUploadOptions, ...this.customOptions, ...customOptions };
+
+  if (encryptionEnabled(opts)) {
+    let key;
+    if (opts.skykeyName != "") {
+      key = skykeyManager.keyByName(opts.skykeyName);
+    } else {
+      key = skykeyManager.keyByID(opts.skykeyID);
+    }
+    file = encryptFile(key);
+  }
 
   const formData = new FormData();
   file = ensureFileObjectConsistency(file);

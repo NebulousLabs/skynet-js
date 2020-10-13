@@ -14,6 +14,10 @@ import * as crypto from "../crypto/crypto";
  * Indicates that the skykey manager doesn't have a key with that ID.
  */
 export const errNoSkykeysWithThatID = "No Skykey is associated with that ID";
+/**
+ * Indicates that the skykey manager doesn't have a key with that ID.
+ */
+export const errNoSkykeysWithThatName = "No Skykey with that name";
 
 /**
  * Indicates that the name is too long
@@ -166,11 +170,28 @@ export class SkykeyManager {
    * Returns the Skykey associated with that ID.
    */
   keyByID(skykeyID: Uint8Array): Skykey {
-    if (!this.keysByID.has(skykeyID)) {
+    const key = this.keysByID.get(skykeyID);
+    if (key === undefined) {
+      throw new Error(errNoSkykeysWithThatID);
+    }
+    return key;
+  }
+
+  /**
+   * Returns the Skykey associated with that key name.
+   */
+  keyByName(name: string): Skykey {
+    const id = this.idsByName.get(name);
+    if (id === undefined) {
+      throw new Error(errNoSkykeysWithThatName);
+    }
+
+    const key = this.keysByID.get(id);
+    if (key === undefined) {
       throw new Error(errNoSkykeysWithThatID);
     }
 
-    return this.keysByID.get(skykeyID);
+    return key
   }
 
   /**
@@ -195,7 +216,7 @@ export class SkykeyManager {
    * Saves the key and appends it to the skykey file and updates/syncs the header.
    */
   saveKey(skykey: Skykey): void {
-    const keyID = skykey.ID();
+    const keyID = skykey.id();
 
     // Store the new key.
     this.idsByName.set(skykey.name, keyID);

@@ -1,8 +1,6 @@
 import JSBI from "jsbi";
 import "./bigint-buffer";
 
-const { BigInt } = JSBI;
-
 export const cipherTypeLen = 8;
 
 /**
@@ -24,9 +22,9 @@ const skyfileVersion = 1;
 
 export class SkyfileLayout {
   version: number;
-  filesize: BigInt;
-  metadataSize: BigInt;
-  fanoutSize: BigInt;
+  filesize: typeof JSBI.BigInt;
+  metadataSize: typeof JSBI.BigInt;
+  fanoutSize: typeof JSBI.BigInt;
   fanoutDataPieces: number;
   fanoutParityPieces: number;
   cipherType: Uint8Array;

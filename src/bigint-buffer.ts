@@ -2,8 +2,6 @@
 
 import JSBI from "jsbi";
 
-const { BigInt } = JSBI;
-
 declare global {
   interface DataView {
     setUint64: Function;
@@ -11,7 +9,7 @@ declare global {
   }
 }
 
-DataView.prototype.setUint64 = function setUint64(byteOffset: number, value: typeof BigInt, littleEndian: boolean) {
+DataView.prototype.setUint64 = function setUint64(byteOffset: number, value: typeof JSBI.BigInt, littleEndian: boolean) {
   if (typeof value === "bigint" && typeof this.setBigUint64 !== "undefined") {
     // the original native implementation for bigint
     this.setBigUint64(byteOffset, value, littleEndian);
@@ -31,7 +29,7 @@ DataView.prototype.setUint64 = function setUint64(byteOffset: number, value: typ
     throw TypeError("Value needs to be BigInt ot JSBI");
   }
 };
-DataView.prototype.getUint64 = function getUint64(byteOffset: number, littleEndian: boolean) {
+DataView.prototype.getUint64 = function getUint64(byteOffset: number, littleEndian: boolean): typeof JSBI.BigInt {
   if (typeof this.getBigUint64 !== "undefined") {
     return this.getBigUint64(byteOffset, littleEndian);
   }

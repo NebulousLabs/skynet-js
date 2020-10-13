@@ -76,7 +76,7 @@ export class Skykey {
    * not key values. This fact is used to identify the master Skykey with which a
    * Skyfile was encrypted.
    */
-  ID() {
+  id() {
     let entropy = this.entropy;
 
     if ((this.keyType == typePublicID || this.keyType, typePrivateID)) {
@@ -94,21 +94,20 @@ export class Skykey {
   /**
    * Returns the crypto.CipherType used by this Skykey.
    */
-  CipherType(): crypto.cipherType {
+  cipherType(): crypto.cipherType {
     return cipherType(this.keyType);
   }
 
   /**
-   * GenerateFileSpecificSubkey creates a new subkey specific to a certain file
-   * being uploaded/downloaded. Skykeys can only be used once with a
-   * given nonce, so this method is used to generate keys with new nonces when a
-   * new file is uploaded.
+   * Creates a new subkey specific to a certain file being uploaded/downloaded.
+   * Skykeys can only be used once with a given nonce, so this method is used to
+   * generate keys with new nonces when a new file is uploaded.
    */
-  GenerateFileSpecificSubkey(): Skykey {
+  generateFileSpecificSubkey(): Skykey {
     // Generate a new random nonce.
     const nonce = new Uint8Array(chacha.xNonceSize);
     fillRandUint8Array(nonce);
-    return this.SubkeyWithNonce(nonce);
+    return this.subkeyWithNonce(nonce);
   }
 
   /**
@@ -116,20 +115,20 @@ export class Skykey {
    * is used to create file-specific keys, and separate keys for Skyfile
    * baseSector uploads and fanout uploads.
    */
-  DeriveSubkey(derivation: Uint8Array): Skykey {
-    const nonce = this.Nonce();
+  deriveSubkey(derivation: Uint8Array): Skykey {
+    const nonce = this.nonce();
     const derivedNonceHash = HashAll(nonce, derivation);
     // Truncate the hash to a nonce.
     const derivedNonce = derivedNonceHash.slice(0, chacha.xNonceSize);
 
-    return this.SubkeyWithNonce(derivedNonce);
+    return this.subkeyWithNonce(derivedNonce);
   }
 
   /**
    * Creates a new subkey with the same key data as this key, but with the given
    * nonce.
    */
-  SubkeyWithNonce(nonce: Uint8Array) {
+  subkeyWithNonce(nonce: Uint8Array) {
     if (nonce.length != chacha.xNonceSize) {
       throw new Error("Incorrect nonce size");
     }
@@ -139,7 +138,7 @@ export class Skykey {
 
     // Sanity check that we can actually make a CipherKey with this. If not, an
     // error will be thrown.
-    crypto.newSiaKey(this.CipherType(), entropy);
+    crypto.newSiaKey(this.cipherType(), entropy);
 
     return new Skykey(this.name, this.keyType, entropy);
   }
@@ -158,11 +157,12 @@ export class Skykey {
     }
 
     // Create the subkey for the encryption ID.
-    const fileSkykey = this.SubkeyWithNonce(nonce);
-    const encIDSkykey = fileSkykey.DeriveSubkey(skyfileEncryptionIDDerivation);
+    const fileSkykey = this.subkeyWithNonce(nonce);
+    const encIDSkykey = fileSkykey.deriveSubkey(skyfileEncryptionIDDerivation);
 
-    // Decrypt the identifier and check that it.
-    const cipherKey = encIDSkykey.CipherKey();
+    // Decrypt the identifier and check that it matches the skyfile encryption
+    // ID specifier.
+    const cipherKey = encIDSkykey.cipherKey();
     const plaintextBytes = await cipherKey.decryptBytes(encryptionID);
     if (areEqualUint8Arrays(plaintextBytes, skyfileEncryptionIDSpecifier)) {
       return true;
@@ -173,14 +173,14 @@ export class Skykey {
   /**
    * Returns the crypto.CipherKey equivalent of this Skykey.
    */
-  CipherKey(): crypto.CipherKey {
-    return crypto.newSiaKey(this.CipherType(), this.entropy);
+  cipherKey(): crypto.CipherKey {
+    return crypto.newSiaKey(this.cipherType(), this.entropy);
   }
 
   /**
    * Returns the nonce of this Skykey.
    */
-  Nonce(): Uint8Array {
+  nonce(): Uint8Array {
     return new Uint8Array(this.entropy, chacha.keySize, chacha.xNonceSize);
   }
 }
