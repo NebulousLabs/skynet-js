@@ -25,8 +25,8 @@ export const maxKeyNameLen = 128;
 export const skykeyIDLen = 16;
 
 /**
- * Type for a Skykey that uses XChaCha20. It reveals its
- * skykey ID in *every* skyfile it encrypts.
+ * Type for a Skykey that uses XChaCha20. It reveals its skykey ID in *every*
+ * skyfile it encrypts.
  */
 export const typePublicID = 1;
 
@@ -92,7 +92,7 @@ export class Skykey {
   }
 
   /**
-   * Returns the crypto.CipherType used by this Skykey.
+   * Returns the CipherType used by this Skykey.
    */
   cipherType(): crypto.cipherType {
     return cipherType(this.keyType);
@@ -151,7 +151,7 @@ export class Skykey {
     if (encryptionID.length != skykeyIDLen || nonce.length != chacha.xNonceSize) {
       throw new Error(errInvalidIDorNonceLength);
     }
-    // This only applies to TypePrivateID keys.
+    // This only applies to typePrivateID keys.
     if (this.keyType != typePrivateID) {
       return false;
     }
@@ -171,7 +171,7 @@ export class Skykey {
   }
 
   /**
-   * Returns the crypto.CipherKey equivalent of this Skykey.
+   * Returns the CipherKey equivalent of this Skykey.
    */
   cipherKey(): crypto.CipherKey {
     return crypto.newSiaKey(this.cipherType(), this.entropy);

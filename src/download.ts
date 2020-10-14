@@ -28,6 +28,8 @@ export function downloadFile(skylink: string, customOptions = {}) {
   const opts = { ...defaultDownloadOptions, ...this.customOptions, ...customOptions, download: true };
   const url = this.getSkylinkUrl(skylink, opts);
 
+  // TODO: Decrypt encrypted files.
+
   // Download the url.
   window.location = url;
 }
@@ -68,6 +70,7 @@ export function getHnsresUrl(domain: string, customOptions = {}) {
   return makeUrl(this.portalUrl, opts.endpointPath, trimUriPrefix(domain, uriHandshakeResolverPrefix));
 }
 
+// TODO: Implement
 export async function getMetadata(skylink: string, customOptions = {}) {
   const opts = { ...defaultDownloadOptions, ...this.customOptions, ...customOptions };
 
@@ -83,6 +86,8 @@ export async function getMetadata(skylink: string, customOptions = {}) {
 export function openFile(skylink: string, customOptions = {}) {
   const opts = { ...defaultDownloadOptions, ...this.customOptions, ...customOptions };
   const url = this.getSkylinkUrl(skylink, opts);
+
+  // TODO: Decrypt encrypted files before opening them.
 
   window.open(url, "_blank");
 }

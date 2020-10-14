@@ -19,7 +19,7 @@ export async function uploadFile(file: File, customOptions = {}): Promise<string
 
 export async function uploadFileRequest(file: File, customOptions = {}) {
   const opts = { ...defaultUploadOptions, ...this.customOptions, ...customOptions };
-
+  // Encrypt if requested.
   if (encryptionEnabled(opts)) {
     let key;
     if (opts.skykeyName != "") {
@@ -27,7 +27,7 @@ export async function uploadFileRequest(file: File, customOptions = {}) {
     } else {
       key = skykeyManager.keyByID(opts.skykeyID);
     }
-    file = encryptFile(key);
+    file = encryptFile(file, key);
   }
 
   const formData = new FormData();

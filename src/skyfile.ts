@@ -1,5 +1,6 @@
 import JSBI from "jsbi";
 import "./bigint-buffer";
+import { cipherType } from "./crypto/crypto";
 
 export const cipherTypeLen = 8;
 
@@ -27,7 +28,7 @@ export class SkyfileLayout {
   fanoutSize: typeof JSBI.BigInt;
   fanoutDataPieces: number;
   fanoutParityPieces: number;
-  cipherType: Uint8Array;
+  ct: cipherType;
   keyData: Uint8Array;
 
   encode(): Uint8Array {
@@ -49,8 +50,8 @@ export class SkyfileLayout {
     offset += 1;
 
     const bytes = new Uint8Array(buffer);
-    bytes.set(this.cipherType, offset);
-    offset += this.cipherType.length;
+    bytes.set(this.ct, offset);
+    offset += this.ct.length;
     bytes.set(this.keyData, offset);
     offset += this.keyData.length;
 
@@ -85,8 +86,8 @@ export function decode(bytes: Uint8Array): SkyfileLayout {
   offset += 1;
   sl.fanoutParityPieces = b.getUint8(offset);
   offset += 1;
-  sl.cipherType = new Uint8Array(bytes.buffer, offset, cipherTypeLen);
-  offset += sl.cipherType.length;
+  sl.ct = new Uint8Array(bytes.buffer, offset, cipherTypeLen);
+  offset += sl.ct.length;
   sl.keyData = new Uint8Array(bytes.buffer, offset, layoutKeyDataSize);
   offset += sl.keyData.length;
 

@@ -3,6 +3,7 @@
     "declaration": true,
     "esModuleInterop": true,
     "isolatedModules": true,
+    "moduleResolution": "node",
     "noEmit": true,
     "noImplicitAny": true,
     "strict": false,

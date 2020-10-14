@@ -13,7 +13,7 @@ describe("skyfileLayoutEncoding", () => {
     sl.fanoutDataPieces = 8;
     sl.fanoutParityPieces = 9;
     let buf = new ArrayBuffer(cipherTypeLen);
-    sl.cipherType = new Uint8Array(buf);
+    sl.ct = new Uint8Array(buf);
     buf = new ArrayBuffer(layoutKeyDataSize);
     sl.keyData = new Uint8Array(buf);
 

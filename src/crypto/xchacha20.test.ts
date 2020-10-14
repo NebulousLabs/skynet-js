@@ -7,6 +7,7 @@ describe("XChaCha20Encryption", () => {
   it("encrypts and decrypts a zero plaintext, and compares the decrypted to the original", async () => {
     const plaintext = new Uint8Array(600);
     const ciphertext = await key.encryptBytes(plaintext);
+    expect(ciphertext.length).toEqual(600);
     const decryptedPlaintext = await key.decryptBytes(ciphertext);
 
     expect(areEqualUint8Arrays(plaintext, decryptedPlaintext));
@@ -16,6 +17,7 @@ describe("XChaCha20Encryption", () => {
     const plaintext = new Uint8Array(600);
     fillRandUint8Array(plaintext);
     const ciphertext = await key.encryptBytes(plaintext);
+    expect(ciphertext.length).toEqual(600);
 
     // Multiple encryptions should return the same ciphertext.
     for (let i = 0; i < 3; i++) {

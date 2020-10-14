@@ -9,6 +9,7 @@ import {
   skykeyID,
 } from "./skykey";
 import * as crypto from "../crypto/crypto";
+import { areEqualUint8Arrays } from "../utils";
 
 /**
  * Indicates that the skykey manager doesn't have a key with that ID.
@@ -170,11 +171,16 @@ export class SkykeyManager {
    * Returns the Skykey associated with that ID.
    */
   keyByID(skykeyID: Uint8Array): Skykey {
-    const key = this.keysByID.get(skykeyID);
-    if (key === undefined) {
-      throw new Error(errNoSkykeysWithThatID);
+    // Manually search for the ID since different instances of the same
+    // Uint8Array object fail the direct equality check.
+    //
+    // TODO: Store strings instead of Uint8Arrays to enable key comparisons.
+    for (const [key, value] of this.keysByID) {
+      if (areEqualUint8Arrays(key, skykeyID)) {
+        return value;
+      }
     }
-    return key;
+    throw new Error(errNoSkykeysWithThatID);
   }
 
   /**
@@ -186,12 +192,7 @@ export class SkykeyManager {
       throw new Error(errNoSkykeysWithThatName);
     }
 
-    const key = this.keysByID.get(id);
-    if (key === undefined) {
-      throw new Error(errNoSkykeysWithThatID);
-    }
-
-    return key
+    return this.keyByID(id);
   }
 
   /**

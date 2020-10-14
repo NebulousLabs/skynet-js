@@ -3,7 +3,7 @@ import { skykeyManager, errNoSkykeysWithThatID } from "./skykey/manager";
 import { decode, SkyfileLayout } from "./skyfile";
 import { sectorSize } from "./constants";
 import { xNonceSize } from "./crypto/xchacha20";
-import { typeXChaCha20 } from "./crypto/crypto";
+import { cipherType, typeXChaCha20 } from "./crypto/crypto";
 import * as types from "./types";
 import { areEqualUint8Arrays } from "./utils";
 import JSBI from "jsbi";
@@ -16,7 +16,7 @@ const baseSectorNonceDerivation = types.newSpecifier("BaseSectorNonce");
 
 const errNoSkykeyMatchesSkyfileEncryptionID = "Unable to find matching skykey for public ID encryption";
 
-const skyfileEncryptedHeaderSize = 2048;
+export const skyfileEncryptedHeaderSize = 2048;
 
 const skyfileEncryptedPaddingGrowthThreshold = JSBI.leftShift(JSBI.BigInt(1), JSBI.BigInt(20)); // 1 MiB
 
@@ -24,6 +24,26 @@ export function decryptFile(file: File): File {
   const fileContents = file.arrayBuffer();
 }
 
+type encryptionHeader = {
+  version: number, // uint8
+  ct: cipherType,
+  keyData: Uint8Array,
+};
+
+type metadataHeader = {
+  filesize: typeof JSBI.BigInt;
+  filename: Uint8Array,
+};
+
+/**
+ * Encrypts the given file in the following way:
+ * - The file's content is transformed to:
+ *   - encryptionHeader | encrypt(metadataHeader | content | padding)
+ *   - encryptionHeader = version | cipherType | keyData
+ *   - metadataHeader = filesize | filename
+ *   - padding = enough blank bytes so that the final size of the encrypted file satisfies padFilesize
+ * - The filename is encrypted using the same skykey.
+ */
 export function encryptFile(file: File, skykey: Skykey): File {
   const fileSpecificSubkey = skykey.generateFileSpecificSubkey();
 
@@ -129,7 +149,7 @@ async function decryptBaseSector(baseSector: Uint8Array) {
 
   // Save the visible-by-default fields of the baseSector's layout.
   const version = skyfileLayout.version;
-  const cipherType = skyfileLayout.cipherType;
+  const cipherType = skyfileLayout.ct;
   const keyData = new Uint8Array(skyfileLayout.keyData); // Copy the key data.
 
   // Decode the now decrypted layout.
@@ -138,7 +158,7 @@ async function decryptBaseSector(baseSector: Uint8Array) {
   // Reset the visible-by-default fields.
   // (They were turned into random values by the decryption)
   skyfileLayout.version = version;
-  skyfileLayout.cipherType = cipherType;
+  skyfileLayout.ct = cipherType;
   skyfileLayout.keyData = new Uint8Array(keyData);
 
   // Now re-copy the decrypted layout into the decrypted baseSector.
@@ -161,5 +181,5 @@ function isEncryptedBaseSector(baseSector: Uint8Array): boolean {
  * it is from an encrypted base sector.
  */
 function isEncryptedLayout(skyfileLayout: SkyfileLayout): boolean {
-  return skyfileLayout.version == 1 && areEqualUint8Arrays(skyfileLayout.cipherType, typeXChaCha20);
+  return skyfileLayout.version == 1 && areEqualUint8Arrays(skyfileLayout.ct, typeXChaCha20);
 }
