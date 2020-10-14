@@ -70,8 +70,17 @@ export function getHnsresUrl(domain: string, customOptions = {}) {
 
 export async function getMetadata(skylink: string, customOptions = {}) {
   const opts = { ...defaultDownloadOptions, ...this.customOptions, ...customOptions };
+  const url = this.getSkylinkUrl(skylink, opts);
 
-  throw new Error("Unimplemented");
+  console.log(url);
+
+  const response = await this.executeRequest({
+    ...opts,
+    method: "head",
+    url,
+  });
+
+  return JSON.parse(response.headers["skynet-file-metadata"]);
 }
 
 /**
