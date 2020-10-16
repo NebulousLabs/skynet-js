@@ -107,10 +107,9 @@ export function randomNumber(low: number, high: number): number {
   return Math.random() * (high - low) + low;
 }
 
-export async function promiseTimeout(ms: number, promise: any) {
+export async function promiseTimeout(promise: any, ms: number) {
   const timeout = new Promise((resolve, reject) => {
-    const id = setTimeout(() => {
-      clearTimeout(id);
+    setTimeout(() => {
       reject(`Timed out after ${ms}ms`);
     }, ms);
   });

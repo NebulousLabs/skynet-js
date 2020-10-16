@@ -44,7 +44,7 @@ export async function setFile(user: User, fileID: FileID, file: SkyFile): Promis
   // fetch the current value to find out the revision, timeout after 2s
   let existing: SignedRegistryValue | null;
   try {
-    existing = await promiseTimeout(2000, this.lookupRegistry(user, fileID));
+    existing = await promiseTimeout(this.lookupRegistry(user, fileID), 2000);
   } catch (error) {
     existing = null;
   }
