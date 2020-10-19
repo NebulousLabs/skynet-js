@@ -34,11 +34,12 @@ export function HashFileID(fileID: FileID): Uint8Array {
 
 // encodeUint8 converts the given number into a uint8 array
 function encodeUint8(num: number): Uint8Array {
-  if (num > 255) {
-    throw new Error("overflow");
-  }
   const encoded = new Uint8Array(8);
-  encoded[0] = num;
+  for (let index = 0; index < encoded.length; index++) {
+    const byte = num & 0xff;
+    encoded[index] = byte;
+    num = (num - byte) / 256;
+  }
   return encoded;
 }
 

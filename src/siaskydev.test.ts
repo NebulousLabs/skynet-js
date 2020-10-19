@@ -1,7 +1,9 @@
 import { SkynetClient } from "./client";
 import { FileType, FileID, User, SkyFile } from "./skydb";
 import { Buffer } from "buffer";
-import { readData } from "./utils";
+import { promiseTimeout, randomNumber, readData } from "./utils";
+import { RegistryValue } from ".";
+import { HashFileID, HashRegistryValue } from "./crypto";
 
 const client = new SkynetClient("https://siasky.dev");
 
@@ -28,5 +30,49 @@ describe.skip("siasky.dev end to end", () => {
     expect(parts.length).toBe(2);
     const buf = Buffer.from(parts[1], "base64");
     expect(buf.toString("ascii")).toEqual("thisistext");
+  });
+
+  it("support rev number update higher than 255", async () => {
+    // create a random user
+    const rand = randomNumber(0, 1e6);
+    const user = new User(`john.doe+${rand}@gmail.com`, "test1234");
+    console.log(`Uploading for userid ${user.id}`);
+
+    // verify there is no entry
+    let existing = null;
+    try {
+      existing = await promiseTimeout(client.lookupRegistry(user, fileID), 1e4);
+    } catch (error) {
+      // expected
+    }
+    expect(existing).toBeNull();
+
+    // build the registry value
+    let revision = 0;
+    const skylink = "CABAB_1Dt0FJsxqsu_J4TodNCbCGvtFf1Uys_3EgzOlTcg";
+
+    // update the registry 256 times
+    for (revision; revision <= 260; revision += 10) {
+      if (revision && revision % 50 === 0) {
+        console.log(`Iteration ${revision}...`);
+      }
+
+      // calculate the registry value and sign it
+      const value: RegistryValue = {
+        tweak: HashFileID(fileID),
+        data: skylink,
+        revision,
+      };
+      const signature = user.sign({ message: HashRegistryValue(value) });
+
+      // update the registry entry
+      const updated = await client.updateRegistry(user, fileID, { value, signature });
+      expect(updated).toBe(true);
+    }
+
+    // verify the revision in the registry
+    existing = await client.lookupRegistry(user, fileID);
+    expect(existing.value.revision).toBeGreaterThan(255);
+    console.log(existing.value);
   });
 });
