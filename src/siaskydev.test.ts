@@ -36,7 +36,6 @@ describe.skip("siasky.dev end to end", () => {
     // create a random user
     const rand = randomNumber(0, 1e6);
     const user = new User(`john.doe+${rand}@gmail.com`, "test1234");
-    console.log(`Uploading for userid ${user.id}`);
 
     // verify there is no entry
     let existing = null;
@@ -48,15 +47,10 @@ describe.skip("siasky.dev end to end", () => {
     expect(existing).toBeNull();
 
     // build the registry value
-    let revision = 0;
     const skylink = "CABAB_1Dt0FJsxqsu_J4TodNCbCGvtFf1Uys_3EgzOlTcg";
 
-    // update the registry 256 times
-    for (revision; revision <= 260; revision += 10) {
-      if (revision && revision % 50 === 0) {
-        console.log(`Iteration ${revision}...`);
-      }
-
+    // update the registry in a loop
+    for (let revision = 0; revision <= 260; revision += 10) {
       // calculate the registry value and sign it
       const value: RegistryValue = {
         tweak: HashFileID(fileID),
@@ -71,8 +65,7 @@ describe.skip("siasky.dev end to end", () => {
     }
 
     // verify the revision in the registry
-    existing = await client.lookupRegistry(user, fileID);
-    expect(existing.value.revision).toBeGreaterThan(255);
-    console.log(existing.value);
+    const entry = await client.lookupRegistry(user, fileID);
+    expect(entry.value.revision).toBeGreaterThan(255);
   });
 });
