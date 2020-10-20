@@ -1,10 +1,15 @@
 {
   "name": "skynet-js",
-  "version": "2.0.9",
+  "version": "2.1.1",
   "description": "Sia Skynet Javascript Client",
   "main": "dist/index.js",
   "files": [
     "dist/*"
+  ],
+  "browserslist": [
+    "defaults",
+    "not IE 11",
+    "not OperaMini all"
   ],
   "scripts": {
     "test": "jest",
@@ -14,6 +19,7 @@
     "prepublishOnly": "yarn build"
   },
   "jest": {
+    "testTimeout": 60000,
     "clearMocks": true,
     "rootDir": "src"
   },
@@ -45,10 +51,14 @@
   "bugs": {
     "url": "https://github.com/NebulousLabs/skynet-js/issues"
   },
-  "homepage": "https://nebulouslabs.github.io/skynet-js/",
+  "homepage": "https://github.com/NebulousLabs/skynet-js",
   "dependencies": {
     "@babel/runtime": "^7.11.2",
     "axios": "^0.20.0",
+    "blakejs": "^1.1.0",
+    "buffer": "^5.6.0",
+    "mime-db": "^1.45.0",
+    "node-forge": "^0.10.0",
     "path-browserify": "^1.0.1",
     "url-join": "^4.0.1",
     "url-parse": "^1.4.7"
@@ -61,14 +71,17 @@
     "@babel/preset-env": "^7.11.5",
     "@babel/preset-typescript": "^7.10.4",
     "@types/jest": "^26.0.14",
+    "@types/mime-db": "^1.43.0",
     "@types/node": "^14.11.2",
+    "@types/node-forge": "^0.9.5",
     "@types/url-join": "^4.0.0",
     "@types/url-parse": "^1.4.3",
     "@typescript-eslint/eslint-plugin": "^4.3.0",
     "@typescript-eslint/parser": "^4.3.0",
     "axios-mock-adapter": "^1.18.2",
     "babel-plugin-transform-class-properties": "^6.24.1",
-    "eslint": "^7.8.1",
+    "eslint": "^7.11.0",
+    "eslint-plugin-compat": "^3.8.0",
     "husky": "^4.3.0",
     "jest": "^26.4.2",
     "lint-staged": "^10.3.0",

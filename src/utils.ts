@@ -1,6 +1,8 @@
+import mimeDB from "mime-db";
 import path from "path-browserify";
 import parse from "url-parse";
 import urljoin from "url-join";
+import { Buffer } from "buffer";
 
 export const defaultSkynetPortalUrl = "https://siasky.net";
 
@@ -100,4 +102,56 @@ export function trimUriPrefix(str: string, prefix: string): string {
     return str.slice(prefix.length);
   }
   return str;
+}
+
+export function randomNumber(low: number, high: number): number {
+  return Math.random() * (high - low) + low;
+}
+
+export async function promiseTimeout(promise: any, ms: number) {
+  const timeout = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      reject(`Timed out after ${ms}ms`);
+    }, ms);
+  });
+
+  return Promise.race([promise, timeout]);
+}
+
+// stringToUint8Array converts a string to a uint8 array
+export function stringToUint8Array(str: string): Uint8Array {
+  return Uint8Array.from(Buffer.from(str));
+}
+
+// hexToUint8Array converts a hex encoded string to a uint8 array
+export function hexToUint8Array(str: string): Uint8Array {
+  return new Uint8Array(str.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
+}
+
+// readData is a helper function that uses a FileReader to read the contents of
+// the given file
+export function readData(file: File): Promise<string | ArrayBuffer> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+}
+
+/**
+ * Get the file mime type. In case the type is not provided, use mime-db and try
+ * to guess the file type based on the extension.
+ */
+export function getFileMimeType(file: File): string {
+  if (file.type) return file.type;
+  const extension = file.name.slice(file.name.lastIndexOf(".") + 1);
+  if (extension) {
+    for (const type in mimeDB) {
+      if (mimeDB[type]?.extensions?.includes(extension)) {
+        return type;
+      }
+    }
+  }
+  return "";
 }
