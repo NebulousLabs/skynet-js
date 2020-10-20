@@ -20,15 +20,6 @@ describe("User", () => {
       expect(new User(username, password).id).toEqual(expected.id);
     }
   });
-
-  it.skip("should take a considerable amount of time", async () => {
-    const start = new Date().getTime();
-    new User("john.doe@example.com", "supersecret");
-    const elapsed = new Date().getTime() - start;
-    expect(elapsed).toBeGreaterThan(10);
-    expect(elapsed).toBeLessThan(100);
-    console.log(`${elapsed}ms`);
-  });
 });
 
 const user = new User("john.doe@example.com", "supersecret");
