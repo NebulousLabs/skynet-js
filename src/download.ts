@@ -84,7 +84,7 @@ export async function getMetadata(skylink: string, customOptions = {}) {
       ? JSON.parse(response.headers["skynet-file-metadata"])
       : {};
   } catch (error) {
-    console.log("error getting skynet-file-metadata");
+    throw new Error("Error getting skynet-file-metadata from skylink");
   }
 
   return skynetFileMetadata;
