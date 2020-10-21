@@ -72,7 +72,6 @@ export async function getMetadata(skylink: string, customOptions = {}) {
   const opts = { ...defaultDownloadOptions, ...this.customOptions, ...customOptions };
   const url = this.getSkylinkUrl(skylink, opts);
 
-  let skynetFileMetadata = {};
   try {
     const response = await this.executeRequest({
       ...opts,
@@ -80,14 +79,10 @@ export async function getMetadata(skylink: string, customOptions = {}) {
       url,
     });
 
-    skynetFileMetadata = response.headers["skynet-file-metadata"]
-      ? JSON.parse(response.headers["skynet-file-metadata"])
-      : {};
+    return response.headers["skynet-file-metadata"] ? JSON.parse(response.headers["skynet-file-metadata"]) : {};
   } catch (error) {
     throw new Error("Error getting skynet-file-metadata from skylink");
   }
-
-  return skynetFileMetadata;
 }
 
 /**

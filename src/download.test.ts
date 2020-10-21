@@ -153,7 +153,6 @@ describe("openFileHns", () => {
 
   beforeEach(() => {
     mock = new MockAdapter(axios);
-    const data = {};
   });
 
   it("should set domain with the portal and hns link and then call window.openFile", async () => {
