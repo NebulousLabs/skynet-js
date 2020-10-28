@@ -1,6 +1,7 @@
-import { keyPairFromSeed, SkynetClient } from "./index";
+import { SkynetClient } from "./client";
+import { pki } from "node-forge";
 
-const { publicKey, privateKey } = keyPairFromSeed("test");
+const { publicKey, privateKey } = pki.ed25519.generateKeyPair();
 const client = new SkynetClient("https://siasky.dev");
 
 const datakey = "HelloWorld";
