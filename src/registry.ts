@@ -1,6 +1,6 @@
 import { AxiosResponse } from "axios";
 import { SkynetClient } from "./client";
-import { defaultOptions, hexToUint8Array, promiseTimeout } from "./utils";
+import { defaultOptions, hexToUint8Array } from "./utils";
 import { Buffer } from "buffer";
 import { HashDataKey, PublicKey, Signature } from "./crypto";
 

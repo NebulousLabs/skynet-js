@@ -4,6 +4,10 @@ import { HashRegistryEntry, PublicKey, SecretKey } from "./crypto";
 import { RegistryEntry, SignedRegistryEntry } from "./registry";
 import { parseSkylink, trimUriPrefix, uriSkynetPrefix } from "./utils";
 
+export function keyPairFromSeed(this: SkynetClient, seed: string): { publicKey: PublicKey; privateKey: SecretKey } {
+  return pki.ed25519.generateKeyPair({ seed });
+}
+
 /**
  * Gets the JSON object corresponding to the publicKey and dataKey.
  * @param publicKey - The user public key.
