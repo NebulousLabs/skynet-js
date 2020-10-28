@@ -71,17 +71,16 @@ export async function setJSON(
       revision = 0;
     }
 
-    if (entry) {
-      // Verify here if we fetched the entry earlier.
-      if (
-        !pki.ed25519.verify({
-          message: HashRegistryEntry(entry.entry),
-          signature: entry.signature,
-          publicKey,
-        })
-      ) {
-        throw new Error("could not verify signature from retrieved, signed registry entry -- possible corrupted entry");
-      }
+    // Verify here if we fetched the entry earlier.
+    if (
+      entry &&
+      !pki.ed25519.verify({
+        message: HashRegistryEntry(entry.entry),
+        signature: entry.signature,
+        publicKey,
+      })
+    ) {
+      throw new Error("could not verify signature from retrieved, signed registry entry -- possible corrupted entry");
     }
   }
 

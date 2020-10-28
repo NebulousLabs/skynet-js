@@ -62,6 +62,7 @@ export function getRootDirectory(file: File): string {
  * @param seed - A secure seed.
  */
 export function keyPairFromSeed(seed: string): { publicKey: PublicKey; privateKey: SecretKey } {
+  // Get a 32-byte seed.
   seed = pkcs5.pbkdf2(seed, "", 1000, 32, md.sha256.create());
   return pki.ed25519.generateKeyPair({ seed });
 }
