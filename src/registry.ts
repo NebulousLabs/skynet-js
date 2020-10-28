@@ -63,7 +63,7 @@ export async function getEntry(
         // TODO: Handle uint64 properly.
         revision: parseInt(response.data.revision, 10),
       },
-      signature: response.data.signature,
+      signature: Buffer.from(hexToUint8Array(response.data.signature)),
     };
   }
   return null;

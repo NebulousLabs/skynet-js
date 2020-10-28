@@ -30,7 +30,6 @@ describe("SkynetClient", () => {
 
     // SkyDB
     expect(client).toHaveProperty("db");
-    expect(client.db).toHaveProperty("keyPairFromSeed");
     expect(client.db).toHaveProperty("getJSON");
     expect(client.db).toHaveProperty("setJSON");
 

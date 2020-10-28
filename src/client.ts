@@ -12,7 +12,7 @@ import {
   openFileHns,
   resolveHns,
 } from "./download";
-import { keyPairFromSeed, getJSON, setJSON } from "./skydb";
+import { getJSON, setJSON } from "./skydb";
 import { getEntry, setEntry } from "./registry";
 
 import { addUrlQuery, defaultPortalUrl, makeUrl } from "./utils";
@@ -63,7 +63,6 @@ export class SkynetClient {
 
   // SkyDB
   db = {
-    keyPairFromSeed: keyPairFromSeed.bind(this),
     getJSON: getJSON.bind(this),
     setJSON: setJSON.bind(this),
   };

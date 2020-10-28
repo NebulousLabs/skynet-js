@@ -4,10 +4,6 @@ import { HashRegistryEntry, PublicKey, SecretKey } from "./crypto";
 import { RegistryEntry, SignedRegistryEntry } from "./registry";
 import { parseSkylink, trimUriPrefix, uriSkynetPrefix } from "./utils";
 
-export function keyPairFromSeed(this: SkynetClient, seed: string): { publicKey: PublicKey; privateKey: SecretKey } {
-  return pki.ed25519.generateKeyPair({ seed });
-}
-
 /**
  * Gets the JSON object corresponding to the publicKey and dataKey.
  * @param publicKey - The user public key.
@@ -70,7 +66,13 @@ export async function setJSON(
     try {
       entry = await this.registry.getEntry(publicKey, dataKey, opts);
 
-      // verify here
+      revision = entry.entry.revision + 1;
+    } catch (err) {
+      revision = 0;
+    }
+
+    if (entry) {
+      // Verify here if we fetched the entry earlier.
       if (
         !pki.ed25519.verify({
           message: HashRegistryEntry(entry.entry),
@@ -80,10 +82,6 @@ export async function setJSON(
       ) {
         throw new Error("could not verify signature from retrieved, signed registry entry -- possible corrupted entry");
       }
-
-      revision = entry.entry.revision + 1;
-    } catch (err) {
-      revision = 0;
     }
   }
 
