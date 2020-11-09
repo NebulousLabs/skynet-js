@@ -13,6 +13,7 @@ import {
   resolveHns,
 } from "./download";
 import { getJSON, setJSON } from "./skydb";
+import { getRegistry, setRegistry } from "./skydb-direct";
 import { getEntry, getEntryUrl, setEntry } from "./registry";
 
 import { addUrlQuery, defaultPortalUrl, makeUrl } from "./utils";
@@ -65,6 +66,12 @@ export class SkynetClient {
   db = {
     getJSON: getJSON.bind(this),
     setJSON: setJSON.bind(this),
+  };
+
+  // SkyDB close updates only the registry data without JSON
+  skydbDirect = {
+    getRegistry: getRegistry.bind(this),
+    setRegistry: setRegistry.bind(this),
   };
 
   // SkyDB helpers
