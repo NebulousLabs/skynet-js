@@ -1,5 +1,6 @@
 import { defaultOptions, uriSkynetPrefix, getFileMimeType, BaseCustomOptions } from "./utils";
 import { SkynetClient } from "./client";
+import { AxiosResponse } from "axios";
 
 /**
  * Custom upload options.
@@ -44,7 +45,13 @@ const defaultUploadOptions = {
 export async function uploadFile(this: SkynetClient, file: File, customOptions?: CustomUploadOptions): Promise<string> {
   const response = await this.uploadFileRequest(file, customOptions);
 
-  return `${uriSkynetPrefix}${response.skylink}`;
+  if (typeof response.data?.skylink !== "string") {
+    throw new Error(
+      "Did not get expected 'skylink' in response despite a successful request. Please try again and report this issue to the devs if it persists."
+    );
+  }
+
+  return `${uriSkynetPrefix}${response.data.skylink}`;
 }
 
 /**
@@ -60,7 +67,7 @@ export async function uploadFileRequest(
   this: SkynetClient,
   file: File,
   customOptions?: CustomUploadOptions
-): Promise<UploadRequestResponse> {
+): Promise<AxiosResponse> {
   const opts = { ...defaultUploadOptions, ...this.customOptions, ...customOptions };
   const formData = new FormData();
 
@@ -71,13 +78,11 @@ export async function uploadFileRequest(
     formData.append(opts.portalFileFieldname, file);
   }
 
-  const { data } = await this.executeRequest({
+  return this.executeRequest({
     ...opts,
     method: "post",
     data: formData,
   });
-
-  return data;
 }
 
 /**
@@ -98,7 +103,13 @@ export async function uploadDirectory(
 ): Promise<string> {
   const response = await this.uploadDirectoryRequest(directory, filename, customOptions);
 
-  return `${uriSkynetPrefix}${response.skylink}`;
+  if (typeof response.data?.skylink !== "string") {
+    throw new Error(
+      "Did not get expected 'skylink' in response despite a successful request. Please try again and report this issue to the devs if it persists."
+    );
+  }
+
+  return `${uriSkynetPrefix}${response.data.skylink}`;
 }
 
 /**
@@ -116,7 +127,7 @@ export async function uploadDirectoryRequest(
   directory: Record<string, File>,
   filename: string,
   customOptions?: CustomUploadOptions
-): Promise<UploadRequestResponse> {
+): Promise<AxiosResponse> {
   const opts = { ...defaultUploadOptions, ...this.customOptions, ...customOptions };
   const formData = new FormData();
 
@@ -125,14 +136,12 @@ export async function uploadDirectoryRequest(
     formData.append(opts.portalDirectoryFileFieldname, file as File, path);
   });
 
-  const { data } = await this.executeRequest({
+  return this.executeRequest({
     ...opts,
     method: "post",
     data: formData,
     query: { filename },
   });
-
-  return data;
 }
 
 /**

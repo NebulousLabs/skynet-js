@@ -35,6 +35,9 @@ describe("uploadFile", () => {
   });
 
   it("should send register onUploadProgress callback if defined", async () => {
+    // Don't use default handler.
+    mock.resetHandlers();
+
     const newPortal = "https://my-portal.net";
     const url = `${newPortal}/skynet/skyfile`;
     const client = new SkynetClient(newPortal);
@@ -130,6 +133,16 @@ describe("uploadFile", () => {
     // @ts-expect-error we only check this use case in case someone ignores typescript typing
     await expect(client.uploadFile(file, { skykeyId: "test" })).rejects.toThrow();
   });
+
+  it("should throw if no skylink was returned", async () => {
+    // Don't use default handler.
+    mock.resetHandlers();
+    mock.onPost(url).replyOnce(200, {});
+
+    await expect(client.uploadFile(file)).rejects.toThrowError(
+      "Did not get expected 'skylink' in response despite a successful request. Please try again and report this issue to the devs if it persists."
+    );
+  });
 });
 
 describe("uploadDirectory", () => {
@@ -175,9 +188,11 @@ describe("uploadDirectory", () => {
   });
 
   it("should encode special characters in the URL", async () => {
+    // Don't use default handler.
+    mock.resetHandlers();
+
     const filename = "encoding?test";
     const url = `${portalUrl}/skynet/skyfile?filename=encoding%3Ftest`;
-    mock.resetHandlers();
     mock.onPost(url).replyOnce(200, { skylink });
 
     const data = await client.uploadDirectory(directory, filename);
@@ -185,5 +200,15 @@ describe("uploadDirectory", () => {
     expect(mock.history.post.length).toBe(1);
 
     expect(data).toEqual(sialink);
+  });
+
+  it("should throw if no skylink was returned", async () => {
+    // Don't use default handler.
+    mock.resetHandlers();
+    mock.onPost(url).replyOnce(200, {});
+
+    await expect(client.uploadDirectory(directory, filename)).rejects.toThrowError(
+      "Did not get expected 'skylink' in response despite a successful request. Please try again and report this issue to the devs if it persists."
+    );
   });
 });

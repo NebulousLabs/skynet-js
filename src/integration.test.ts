@@ -101,9 +101,11 @@ describe("Upload and download integration tests", () => {
 
     // Upload the data to acquire its skylink
     const file = new File([JSON.stringify(json)], dataKey, { type: "application/json" });
-    const skylink = await client.uploadFile(file);
+    const response = await client.uploadFileRequest(file);
+    expect(response.headers).toEqual(expect.any(Object));
+    expect(response.headers["content-type"]).toEqual("application/json; charset=utf-8");
 
-    const data = await client.getFileContent(skylink);
+    const data = await client.getFileContent(response.data.skylink);
     expect(data).toEqual(expect.any(Object));
     expect(data).toEqual(json);
   });
