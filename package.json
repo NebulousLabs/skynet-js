@@ -42,7 +42,7 @@
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "eslint --ext .ts --fix",
-      "tsc --esModuleInterop --noemit",
+      "tsc --esModuleInterop",
       "prettier --write"
     ],
     "*.{json,yml,md}": [
@@ -100,7 +100,7 @@
     "eslint": "^7.11.0",
     "eslint-plugin-compat": "^3.8.0",
     "eslint-plugin-jsdoc": "^32.0.0",
-    "husky": "^5.0.9",
+    "husky": "^4.3.8",
     "jest": "^26.4.2",
     "lint-staged": "^10.3.0",
     "prettier": "^2.1.1",
