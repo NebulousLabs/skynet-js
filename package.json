@@ -76,7 +76,7 @@
     "sjcl": "^1.0.8",
     "tweetnacl": "^1.0.3",
     "url-join": "^4.0.1",
-    "url-parse": "^1.4.7"
+    "url-parse": "=1.4.7"
   },
   "devDependencies": {
     "@babel/cli": "^7.11.6",
@@ -92,7 +92,7 @@
     "@types/randombytes": "^2.0.0",
     "@types/sjcl": "^1.0.29",
     "@types/url-join": "^4.0.0",
-    "@types/url-parse": "^1.4.3",
+    "@types/url-parse": "=1.4.3",
     "@typescript-eslint/eslint-plugin": "^4.3.0",
     "@typescript-eslint/parser": "^4.3.0",
     "axios-mock-adapter": "^1.18.2",
@@ -100,7 +100,7 @@
     "eslint": "^7.11.0",
     "eslint-plugin-compat": "^3.8.0",
     "eslint-plugin-jsdoc": "^32.0.0",
-    "husky": "^4.3.8",
+    "husky": "=4.3.8",
     "jest": "^26.4.2",
     "lint-staged": "^10.3.0",
     "prettier": "^2.1.1",
