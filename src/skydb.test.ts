@@ -54,10 +54,20 @@ describe("getJSON", () => {
     expect(revision).toBeNull();
   });
 
-  it("should throw if the returned file data is not JSON", async () => {
+  it("should throw if the returned file data is a string but not valid JSON", async () => {
     // mock a successful registry lookup
     mock.onGet(registryLookupUrl).reply(200, JSON.stringify(entryData));
     mock.onGet(skylinkUrl).reply(200, "thisistext", {});
+
+    await expect(client.db.getJSON(publicKey, dataKey)).rejects.toThrowError(
+      `File data for the entry at data key '${dataKey}' is not JSON: SyntaxError: Unexpected token h in JSON at position 1`
+    );
+  });
+
+  it("should throw if the returned file data is not JSON", async () => {
+    // mock a successful registry lookup
+    mock.onGet(registryLookupUrl).reply(200, JSON.stringify(entryData));
+    mock.onGet(skylinkUrl).reply(200, 9001, {});
 
     await expect(client.db.getJSON(publicKey, dataKey)).rejects.toThrowError(
       `File data for the entry at data key '${dataKey}' is not JSON.`

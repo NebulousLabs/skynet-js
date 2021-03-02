@@ -59,8 +59,17 @@ export async function getJSON(
 
   // Download the data in that Skylink.
   const skylink = entry.data;
-  const { data } = await this.getFileContent<Record<string, unknown>>(skylink, opts);
+  let { data } = await this.getFileContent<Record<string, unknown>>(skylink, opts);
 
+  // Check for valid JSON.
+  if (typeof data === "string") {
+    // Try to parse.
+    try {
+      data = JSON.parse(data);
+    } catch (err) {
+      throw new Error(`File data for the entry at data key '${dataKey}' is not JSON: ${err}`);
+    }
+  }
   if (typeof data !== "object" || data === null) {
     throw new Error(`File data for the entry at data key '${dataKey}' is not JSON.`);
   }
