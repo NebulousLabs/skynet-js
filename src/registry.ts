@@ -19,7 +19,7 @@ import { hashDataKey, hashRegistryEntry, Signature } from "./crypto";
 /**
  * Custom get entry options.
  *
- * @property [timeout=5] - The custom timeout for getting an entry, in seconds. The maximum value allowed is 300.
+ * @property [timeout=2] - The custom timeout for getting an entry, in seconds. The maximum value allowed is 300.
  */
 export type CustomGetEntryOptions = BaseCustomOptions & {
   timeout?: number;
@@ -32,7 +32,7 @@ export type CustomSetEntryOptions = BaseCustomOptions;
 
 const defaultGetEntryOptions = {
   ...defaultOptions("/skynet/registry"),
-  timeout: 5,
+  timeout: 2,
 };
 
 const defaultSetEntryOptions = {
