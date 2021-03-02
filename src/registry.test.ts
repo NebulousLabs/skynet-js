@@ -1,8 +1,7 @@
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import { genKeyPairAndSeed } from "./crypto";
-import { SkynetClient, defaultSkynetPortalUrl, genKeyPairFromSeed } from "./index";
-import { MAX_GET_ENTRY_TIMEOUT } from "./registry";
+import { SkynetClient, defaultSkynetPortalUrl, genKeyPairFromSeed, DEFAULT_GET_ENTRY_TIMEOUT, MAX_GET_ENTRY_TIMEOUT } from "./index";
 
 const { publicKey, privateKey } = genKeyPairFromSeed("insecure test seed");
 const portalUrl = defaultSkynetPortalUrl;
@@ -82,7 +81,7 @@ describe("getEntryUrl", () => {
   it("should generate the correct registry url for the given entry", () => {
     const url = client.registry.getEntryUrl(publicKey, dataKey);
 
-    expect(url).toEqual(`${portalUrl}/skynet/registry?publickey=${encodedPK}&datakey=${encodedDK}&timeout=5`);
+    expect(url).toEqual(`${portalUrl}/skynet/registry?publickey=${encodedPK}&datakey=${encodedDK}&timeout=${DEFAULT_GET_ENTRY_TIMEOUT}`);
   });
 
   it("Should throw if the timeout is not an integer", () => {
@@ -96,7 +95,7 @@ describe("getEntryUrl", () => {
   it("should trim the prefix if it is provided", () => {
     const url = client.registry.getEntryUrl(`ed25519:${publicKey}`, dataKey);
 
-    expect(url).toEqual(`${portalUrl}/skynet/registry?publickey=${encodedPK}&datakey=${encodedDK}&timeout=5`);
+    expect(url).toEqual(`${portalUrl}/skynet/registry?publickey=${encodedPK}&datakey=${encodedDK}&timeout=${DEFAULT_GET_ENTRY_TIMEOUT}`);
   });
 });
 

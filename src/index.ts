@@ -1,5 +1,6 @@
 export { SkynetClient } from "./client";
 export { deriveChildSeed, genKeyPairAndSeed, genKeyPairFromSeed } from "./crypto";
+export { DEFAULT_GET_ENTRY_TIMEOUT, MAX_GET_ENTRY_TIMEOUT } from "./registry";
 export {
   MAX_REVISION,
   defaultPortalUrl,

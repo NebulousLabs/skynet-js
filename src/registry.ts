@@ -16,6 +16,20 @@ import {
 } from "./utils";
 import { hashDataKey, hashRegistryEntry, Signature } from "./crypto";
 
+export const DEFAULT_GET_ENTRY_TIMEOUT = 2;
+
+export const MAX_GET_ENTRY_TIMEOUT = 300; // 5 minutes
+
+/**
+ * Regex for JSON revision value without quotes.
+ */
+export const regexRevisionNoQuotes = /"revision":\s*([0-9]+)/;
+
+/**
+ * Regex for JSON revision value with quotes.
+ */
+const regexRevisionWithQuotes = /"revision":\s*"([0-9]+)"/;
+
 /**
  * Custom get entry options.
  *
@@ -32,24 +46,12 @@ export type CustomSetEntryOptions = BaseCustomOptions;
 
 const defaultGetEntryOptions = {
   ...defaultOptions("/skynet/registry"),
-  timeout: 2,
+  timeout: DEFAULT_GET_ENTRY_TIMEOUT,
 };
 
 const defaultSetEntryOptions = {
   ...defaultOptions("/skynet/registry"),
 };
-
-export const MAX_GET_ENTRY_TIMEOUT = 300; // 5 minutes
-
-/**
- * Regex for JSON revision value without quotes.
- */
-export const regexRevisionNoQuotes = /"revision":\s*([0-9]+)/;
-
-/**
- * Regex for JSON revision value with quotes.
- */
-const regexRevisionWithQuotes = /"revision":\s*"([0-9]+)"/;
 
 /**
  * Registry entry.
