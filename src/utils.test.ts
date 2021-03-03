@@ -1,5 +1,5 @@
+import { addUrlQuery, makeUrl } from "./url";
 import {
-  addUrlQuery,
   assertUint64,
   convertSkylinkToBase32,
   defaultSkynetPortalUrl,
@@ -8,7 +8,6 @@ import {
   getRelativeFilePath,
   getRootDirectory,
   hexToUint8Array,
-  makeUrl,
   MAX_REVISION,
   parseSkylink,
   parseSkylinkBase32,

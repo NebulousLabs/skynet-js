@@ -3,13 +3,12 @@ import { Buffer } from "buffer";
 import { sign } from "tweetnacl";
 
 import { SkynetClient } from "./client";
+import { addUrlQuery, makeUrl } from "./url";
 import {
-  addUrlQuery,
   BaseCustomOptions,
   assertUint64,
   defaultOptions,
   hexToUint8Array,
-  makeUrl,
   toHexString,
   trimPrefix,
   isHexString,

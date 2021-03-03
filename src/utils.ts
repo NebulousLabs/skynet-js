@@ -3,7 +3,6 @@ import base32Encode from "base32-encode";
 import mime from "mime/lite";
 import path from "path-browserify";
 import parse from "url-parse";
-import urljoin from "url-join";
 import { Buffer } from "buffer";
 import { CustomClientOptions } from "./client";
 
@@ -43,35 +42,6 @@ export const uriSkynetPrefix = "sia:";
  * The maximum allowed value for an entry revision. Setting an entry revision to this value prevents it from being updated further.
  */
 export const MAX_REVISION = BigInt("18446744073709551615"); // max uint64
-
-/**
- * Adds a subdomain to the given URL.
- *
- * @param url - The URL.
- * @param subdomain - The subdomain to add.
- * @returns - The final URL.
- */
-export function addSubdomain(url: string, subdomain: string): string {
-  const urlObj = new URL(url);
-  urlObj.hostname = `${subdomain}.${urlObj.hostname}`;
-  const str = urlObj.toString();
-  return trimSuffix(str, "/");
-}
-
-/**
- * Adds a query to the given URL.
- *
- * @param url - The URL.
- * @param query - The query parameters.
- * @returns - The final URL.
- */
-export function addUrlQuery(url: string, query: Record<string, unknown>): string {
-  const parsed = parse(url, true);
-  // Combine the desired query params with the already existing ones.
-  query = { ...parsed.query, ...query };
-  parsed.set("query", query);
-  return parsed.toString();
-}
 
 /**
  * Checks if the provided bigint can fit in a 64-bit unsigned integer.
@@ -120,17 +90,11 @@ export function defaultOptions(endpointPath: string): CustomClientOptions & { en
   };
 }
 
-// TODO: This will be smarter. See
-// https://github.com/NebulousLabs/skynet-docs/issues/21.
-/**
- * Returns the default portal URL.
- *
- * @returns - The portal URL.
- */
-export function defaultPortalUrl(): string {
-  /* istanbul ignore next */
-  if (typeof window === "undefined") return "/"; // default to path root on ssr
-  return window.location.origin;
+export function ensurePrefix(s: string, prefix: string): string {
+  if (!s.startsWith(prefix)) {
+    s = `${prefix}${s}`;
+  }
+  return s;
 }
 
 /**
@@ -190,17 +154,6 @@ export function getRootDirectory(file: File): string {
   const { root, dir } = path.parse(filePath);
 
   return path.normalize(dir).slice(root.length).split(path.sep)[0];
-}
-
-/**
- * Properly joins paths together to create a URL. Takes a variable number of
- * arguments.
- *
- * @param args - Array of URL parts to join.
- * @returns - Final URL constructed from the input parts.
- */
-export function makeUrl(...args: string[]): string {
-  return args.reduce((acc, cur) => urljoin(acc, cur));
 }
 
 const SKYLINK_MATCHER = "([a-zA-Z0-9_-]{46})";
@@ -320,7 +273,7 @@ export function trimPrefix(str: string, prefix: string): string {
  * @param suffix - The suffix to remove.
  * @returns - The processed string.
  */
-function trimSuffix(str: string, suffix: string): string {
+export function trimSuffix(str: string, suffix: string): string {
   while (str.endsWith(suffix)) {
     str = str.substring(0, str.length - suffix.length);
   }

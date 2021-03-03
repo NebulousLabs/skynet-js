@@ -1,3 +1,5 @@
+import type { InterfaceSchema, SkappInfo } from "skynet-interface-utils";
+
 import axios, { AxiosResponse } from "axios";
 import type { Method } from "axios";
 import { uploadFile, uploadDirectory, uploadDirectoryRequest, uploadFileRequest } from "./upload";
@@ -17,8 +19,9 @@ import {
 } from "./download";
 import { getJSON, setJSON } from "./skydb";
 import { getEntry, getEntryUrl, setEntry } from "./registry";
-
-import { addUrlQuery, defaultPortalUrl, makeUrl } from "./utils";
+import { addUrlQuery, defaultPortalUrl, makeUrl } from "./url";
+import { Gate } from "./interface";
+import type { CustomGateOptions, Interface } from "./interface";
 
 /**
  * Custom client options.
@@ -86,6 +89,30 @@ export class SkynetClient {
   openFile = openFile;
   openFileHns = openFileHns;
   resolveHns = resolveHns;
+
+  // Gate
+
+  protected clientGate?: Gate;
+
+  gate = {
+    destroy: async (): Promise<void> => {
+      if (!this.clientGate) {
+        throw new Error("Gate not initialized");
+      }
+      return this.clientGate.destroy();
+    },
+
+    initialize: async (skappInfo: SkappInfo, bridgeUrl: string, customOptions?: CustomGateOptions): Promise<void> => {
+      this.clientGate = await Gate.initialize(this, skappInfo, bridgeUrl, customOptions);
+    },
+
+    loadInterface: async (interfaceSchema: InterfaceSchema): Promise<Interface> => {
+      if (!this.clientGate) {
+        throw new Error("Gate not initialized");
+      }
+      return this.clientGate.loadInterface(interfaceSchema);
+    },
+  };
 
   // SkyDB
   db = {
