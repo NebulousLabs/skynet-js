@@ -99,7 +99,10 @@ export class SkynetClient {
       if (!this.clientGate) {
         throw new Error("Gate not initialized");
       }
-      return this.clientGate.destroy();
+      await this.clientGate.destroy();
+      this.clientGate = undefined;
+
+      return;
     },
 
     initialize: async (skappInfo: SkappInfo, bridgeUrl: string, customOptions?: CustomGateOptions): Promise<void> => {

@@ -29,7 +29,7 @@ export class Gate {
     public bridgeUrl: string,
     public bridgeMetadata: Promise<BridgeMetadata>,
     protected childFrame: HTMLIFrameElement,
-    protected bridgeConnection: Promise<Connection>,
+    protected bridgeConnection: Connection,
     public options: CustomGateOptions
   ) {}
 
@@ -58,13 +58,12 @@ export class Gate {
       remoteWindow: childWindow,
       remoteOrigin: "*",
     });
-    const bridgeConnection = ParentHandshake(messenger, {}, opts.handshakeMaxAttempts, opts.handshakeAttemptsInterval);
+    const connection = await ParentHandshake(messenger, {}, opts.handshakeMaxAttempts, opts.handshakeAttemptsInterval);
 
     // Get the bridge metadata.
-    const connection = await bridgeConnection;
-    const bridgeMetadata = connection.remoteHandle().call("getBridgeMetadata");
+    const bridgeMetadata = connection.remoteHandle().call("getBridgeMetadata", skappInfo);
 
-    return new Gate(client, skappInfo, bridgeUrl, bridgeMetadata, childFrame, bridgeConnection, opts);
+    return new Gate(client, skappInfo, bridgeUrl, bridgeMetadata, childFrame, connection, opts);
   }
 
   // ===============
@@ -78,7 +77,7 @@ export class Gate {
     for (let [name, _schema] of Object.entries(schema.methods)) {
       // Use normal function for non-lexical resolution of 'this'.
       const method = async function (this: Interface, ...args: unknown[]): Promise<unknown> {
-        return this.gate.callInterface(this.schema, name, args);
+        return this.gate.callInterface(this.schema.name, name, args);
       };
 
       loadedInterface[name] = method;
@@ -87,7 +86,7 @@ export class Gate {
     return loadedInterface;
   }
 
-  async callInterface(schema: InterfaceSchema, method: string, ...args: unknown[]): Promise<unknown> {
+  async callInterface(interfaceName: string, method: string, ...args: unknown[]): Promise<unknown> {
     // TODO: Add checks for valid parameters and return value. Should be in skynet-provider-utils and should check for reserved names.
     // TODO: This check doesn't work.
     // if (method in this.providerStatus.providerInterface) {
@@ -96,8 +95,7 @@ export class Gate {
     //   );
     // }
 
-    const connection = await this.bridgeConnection;
-    return connection.remoteHandle().call("callInterface", schema, method, args);
+    return this.bridgeConnection.remoteHandle().call("callInterface", interfaceName, method, args);
   }
 
   /**
@@ -109,8 +107,7 @@ export class Gate {
     // TODO: Delete all connected interfaces.
 
     // Close the bridge connection.
-    const connection = await this.bridgeConnection;
-    connection.close();
+    this.bridgeConnection.close();
 
     // Close the child iframe.
     if (this.childFrame) {
@@ -118,49 +115,22 @@ export class Gate {
     }
   }
 
-  async logout(schema: InterfaceSchema): Promise<void> {
-    const connection = await this.bridgeConnection;
-    await connection.remoteHandle().call("logout", schema);
+  async logout(interfaceName: string): Promise<void> {
+    await this.bridgeConnection.remoteHandle().call("logout", interfaceName);
   }
 
-  async loginSilent(schema: InterfaceSchema): Promise<void> {
-    const connection = await this.bridgeConnection;
-    await connection.remoteHandle().call("loginSilent", schema, this.skappInfo);
+  async loginSilent(interfaceName: string): Promise<void> {
+    await this.bridgeConnection.remoteHandle().call("loginSilent", interfaceName);
   }
 
-  async loginPopup(): Promise<void> {
-    // Register an event listener for 'connection'.
-
-    const connection = await this.bridgeConnection;
-
-    const promise: Promise<void> = new Promise((resolve, reject) => {
-      const remoteHandle = connection.remoteHandle();
-      const handleEvent = (status: boolean) => {
-        remoteHandle.removeEventListener("connection", handleEvent);
-
-        if (status) {
-          resolve();
-        } else {
-          reject();
-        }
-      };
-
-      remoteHandle.addEventListener("connection", handleEvent);
-    });
-
+  async loginPopup(interfaceName: string): Promise<void> {
     // Launch router
 
-    const result = await this.launchRouter();
-    if (result === "closed") {
-      // User closed the router or connector.
-      throw new Error("Router window closed");
-    } else if (result !== "success") {
-      throw new Error(result);
-    }
+    this.launchRouter();
 
-    // Wait for a one-time 'connection' event.
+    // Wait for bridge to complete the connection.
 
-    return promise;
+    return this.bridgeConnection.remoteHandle().call("loginPopup", interfaceName);
   }
 
   /**
@@ -179,7 +149,7 @@ export class Gate {
   /**
    * Creates window with router and waits for a response.
    */
-  protected async launchRouter(): Promise<string> {
+  protected async launchRouter(): Promise<void> {
     // Set the router URL.
     const bridgeMetadata = await this.bridgeMetadata;
     const routerUrl = urljoin(this.bridgeUrl, bridgeMetadata.relativeRouterUrl);
