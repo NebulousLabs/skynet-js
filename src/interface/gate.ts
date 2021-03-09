@@ -75,9 +75,9 @@ export class Gate {
 
     // Add each method in the schema to the exposed interface.
     for (let [name, _schema] of Object.entries(schema.methods)) {
-      // Use normal function for non-lexical resolution of 'this'.
-      const method = async function (this: Interface, ...args: unknown[]): Promise<unknown> {
-        return this.gate.callInterface(this.schema.name, name, args);
+      // Use arrow function for lexical resolution of 'this'.
+      const method = async (...args: unknown[]): Promise<unknown> => {
+        return this.callInterface(schema.name, name, args);
       };
 
       loadedInterface[name] = method;
@@ -152,35 +152,10 @@ export class Gate {
   protected async launchRouter(): Promise<void> {
     // Set the router URL.
     const bridgeMetadata = await this.bridgeMetadata;
-    const routerUrl = urljoin(this.bridgeUrl, bridgeMetadata.relativeRouterUrl);
-
-    // Wait for result.
-    const promise: Promise<string> = new Promise((resolve, reject) => {
-      // Register a message listener.
-      const handleMessage = (event: MessageEvent) => {
-        console.log(event);
-        if (event.origin !== this.bridgeUrl) return;
-
-        window.removeEventListener("message", handleMessage);
-
-        // Resolve or reject the promise.
-        if (!event.data) {
-          reject("Router did not send response");
-        }
-        resolve(event.data);
-      };
-
-      window.addEventListener("message", handleMessage);
-    });
+    let routerUrl = urljoin(this.bridgeUrl, bridgeMetadata.relativeRouterUrl);
+    routerUrl = `${routerUrl}?skappName=${this.skappInfo.name}&skappDomain=${this.skappInfo.domain}`;
 
     // Open the router.
-    const routerWindow = popupCenter(
-      routerUrl,
-      bridgeMetadata.routerName,
-      bridgeMetadata.routerW,
-      bridgeMetadata.routerH
-    );
-
-    return promise;
+    popupCenter(routerUrl, bridgeMetadata.routerName, bridgeMetadata.routerW, bridgeMetadata.routerH);
   }
 }
