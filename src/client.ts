@@ -115,6 +115,13 @@ export class SkynetClient {
       }
       return this.clientGate.loadInterface(interfaceSchema);
     },
+
+    loadMySky: async (interfaceSchema: InterfaceSchema): Promise<MySky> => {
+      if (!this.clientGate) {
+        throw new Error("Gate not initialized");
+      }
+      return this.clientGate.loadMySky(interfaceSchema);
+    },
   };
 
   // SkyDB

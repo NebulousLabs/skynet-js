@@ -4,13 +4,13 @@ import { createIframe, ensureUrl } from "skynet-interface-utils";
 import type { BridgeMetadata, InterfaceSchema, SkappInfo } from "skynet-interface-utils";
 import urljoin from "url-join";
 
-import { Interface } from ".";
+import { CustomConnectOptions, Interface, MySky } from ".";
 import { SkynetClient } from "../client";
 import { popupCenter } from "./utils";
 
 export type CustomGateOptions = {
-  handshakeMaxAttempts: number;
-  handshakeAttemptsInterval: number;
+  handshakeMaxAttempts?: number;
+  handshakeAttemptsInterval?: number;
 };
 
 const defaultBridgeOptions = {
@@ -27,7 +27,7 @@ export class Gate {
     protected client: SkynetClient,
     public skappInfo: SkappInfo,
     public bridgeUrl: string,
-    public bridgeMetadata: Promise<BridgeMetadata>,
+    public bridgeMetadata: BridgeMetadata,
     protected childFrame: HTMLIFrameElement,
     protected bridgeConnection: Connection,
     public options: CustomGateOptions
@@ -61,7 +61,7 @@ export class Gate {
     const connection = await ParentHandshake(messenger, {}, opts.handshakeMaxAttempts, opts.handshakeAttemptsInterval);
 
     // Get the bridge metadata.
-    const bridgeMetadata = connection.remoteHandle().call("getBridgeMetadata", skappInfo);
+    const bridgeMetadata = await connection.remoteHandle().call("getBridgeMetadata", skappInfo);
 
     return new Gate(client, skappInfo, bridgeUrl, bridgeMetadata, childFrame, connection, opts);
   }
@@ -72,30 +72,36 @@ export class Gate {
 
   async loadInterface(schema: InterfaceSchema): Promise<Interface> {
     const loadedInterface = new Interface(this, schema);
-
-    // Add each method in the schema to the exposed interface.
-    for (let [name, _schema] of Object.entries(schema.methods)) {
-      // Use arrow function for lexical resolution of 'this'.
-      const method = async (...args: unknown[]): Promise<unknown> => {
-        return this.callInterface(schema.name, name, args);
-      };
-
-      loadedInterface[name] = method;
-    }
-
     return loadedInterface;
   }
 
-  async callInterface(interfaceName: string, method: string, ...args: unknown[]): Promise<unknown> {
+  async loadMySky(schema: InterfaceSchema): Promise<MySky> {
+    if (!schema.mysky) {
+      throw new Error("Given schema is not a mysky schema");
+    }
+
+    const loadedMySky = new MySky(this, schema);
+    return loadedMySky;
+  }
+
+  async callInterface(interfaceName: string, method: string, schema: InterfaceSchema, ...args: unknown[]): Promise<unknown> {
     // TODO: Add checks for valid parameters and return value. Should be in skynet-provider-utils and should check for reserved names.
-    // TODO: This check doesn't work.
-    // if (method in this.providerStatus.providerInterface) {
-    //   throw new Error(
-    //     `Unsupported method for this provider interface. Method: '${method}', Interface: ${this.providerStatus.providerInterface}`
-    //   );
-    // }
 
     return this.bridgeConnection.remoteHandle().call("callInterface", interfaceName, method, args);
+  }
+
+  async connectPopup(interfaceName: string, opts: CustomConnectOptions): Promise<void> {
+    // Launch router
+
+    this.launchRouter(opts.defaultProviders);
+
+    // Wait for bridge to complete the connection.
+
+    return this.bridgeConnection.remoteHandle().call("connectPopup", interfaceName, opts);
+  }
+
+  async connectSilent(interfaceName: string): Promise<void> {
+    await this.bridgeConnection.remoteHandle().call("connectSilent", interfaceName);
   }
 
   /**
@@ -115,22 +121,26 @@ export class Gate {
     }
   }
 
+  async disconnect(interfaceName: string): Promise<void> {
+    await this.bridgeConnection.remoteHandle().call("disconnect", interfaceName);
+  }
+
   async logout(interfaceName: string): Promise<void> {
     await this.bridgeConnection.remoteHandle().call("logout", interfaceName);
   }
 
-  async loginSilent(interfaceName: string): Promise<void> {
-    await this.bridgeConnection.remoteHandle().call("loginSilent", interfaceName);
-  }
-
-  async loginPopup(interfaceName: string): Promise<void> {
+  async loginPopup(interfaceName: string, opts: CustomConnectOptions): Promise<void> {
     // Launch router
 
     this.launchRouter();
 
     // Wait for bridge to complete the connection.
 
-    return this.bridgeConnection.remoteHandle().call("loginPopup", interfaceName);
+    return this.bridgeConnection.remoteHandle().call("loginPopup", interfaceName, opts);
+  }
+
+  async loginSilent(interfaceName: string): Promise<void> {
+    await this.bridgeConnection.remoteHandle().call("loginSilent", interfaceName);
   }
 
   /**
@@ -149,11 +159,16 @@ export class Gate {
   /**
    * Creates window with router and waits for a response.
    */
-  protected async launchRouter(): Promise<void> {
+  protected async launchRouter(defaultProviders: Array<ProviderInfo> | undefined): Promise<void> {
+    if (!defaultProviders) {
+      defaultProviders = [];
+    }
+    const defaultProvidersString = JSON.stringify(defaultProviders);
+
     // Set the router URL.
-    const bridgeMetadata = await this.bridgeMetadata;
+    const bridgeMetadata = this.bridgeMetadata;
     let routerUrl = urljoin(this.bridgeUrl, bridgeMetadata.relativeRouterUrl);
-    routerUrl = `${routerUrl}?skappName=${this.skappInfo.name}&skappDomain=${this.skappInfo.domain}`;
+    routerUrl = `${routerUrl}?skappName=${this.skappInfo.name}&skappDomain=${this.skappInfo.domain}&defaultProviders=${defaultProvidersString}`;
 
     // Open the router.
     popupCenter(routerUrl, bridgeMetadata.routerName, bridgeMetadata.routerW, bridgeMetadata.routerH);
