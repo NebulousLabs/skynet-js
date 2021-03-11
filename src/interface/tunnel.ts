@@ -1,14 +1,14 @@
 import { ParentHandshake, WindowMessenger } from "post-me";
 import type { Connection } from "post-me";
-import { createIframe, ensureUrl } from "skynet-interface-utils";
+import { createIframe, ensureUrl, ProviderInfo } from "skynet-interface-utils";
 import type { BridgeMetadata, InterfaceSchema, SkappInfo } from "skynet-interface-utils";
 import urljoin from "url-join";
 
-import { CustomConnectOptions, Interface, MySky } from ".";
+import { CustomConnectOptions, InterfaceInstance, MySkyInstance } from ".";
 import { SkynetClient } from "../client";
 import { popupCenter } from "./utils";
 
-export type CustomGateOptions = {
+export type CustomTunnelOptions = {
   handshakeMaxAttempts?: number;
   handshakeAttemptsInterval?: number;
 };
@@ -18,7 +18,7 @@ const defaultBridgeOptions = {
   handshakeAttemptsInterval: 500,
 };
 
-export class Gate {
+export class Tunnel {
   // ===========
   // Constructor
   // ===========
@@ -30,15 +30,15 @@ export class Gate {
     public bridgeMetadata: BridgeMetadata,
     protected childFrame: HTMLIFrameElement,
     protected bridgeConnection: Connection,
-    public options: CustomGateOptions
+    public options: CustomTunnelOptions
   ) {}
 
   static async initialize(
     client: SkynetClient,
     skappInfo: SkappInfo,
     bridgeUrl: string,
-    customOptions?: CustomGateOptions
-  ): Promise<Gate> {
+    customOptions?: CustomTunnelOptions
+  ): Promise<Tunnel> {
     if (typeof Storage == "undefined") {
       throw new Error("Browser does not support web storage");
     }
@@ -63,24 +63,24 @@ export class Gate {
     // Get the bridge metadata.
     const bridgeMetadata = await connection.remoteHandle().call("getBridgeMetadata", skappInfo);
 
-    return new Gate(client, skappInfo, bridgeUrl, bridgeMetadata, childFrame, connection, opts);
+    return new Tunnel(client, skappInfo, bridgeUrl, bridgeMetadata, childFrame, connection, opts);
   }
 
   // ===============
-  // Public Gate API
+  // Public Tunnel API
   // ===============
 
-  async loadInterface(schema: InterfaceSchema): Promise<Interface> {
-    const loadedInterface = new Interface(this, schema);
+  async loadInterface(schema: InterfaceSchema): Promise<InterfaceInstance> {
+    const loadedInterface = new InterfaceInstance(this, schema);
     return loadedInterface;
   }
 
-  async loadMySky(schema: InterfaceSchema): Promise<MySky> {
+  async loadMySky(schema: InterfaceSchema): Promise<MySkyInstance> {
     if (!schema.mysky) {
       throw new Error("Given schema is not a mysky schema");
     }
 
-    const loadedMySky = new MySky(this, schema);
+    const loadedMySky = new MySkyInstance(this, schema);
     return loadedMySky;
   }
 
@@ -132,7 +132,7 @@ export class Gate {
   async loginPopup(interfaceName: string, opts: CustomConnectOptions): Promise<void> {
     // Launch router
 
-    this.launchRouter();
+    await this.launchRouter(opts.defaultProviders);
 
     // Wait for bridge to complete the connection.
 
@@ -146,14 +146,14 @@ export class Gate {
   /**
    * Restarts the bridge by destroying it and starting it again.
    */
-  async restart(): Promise<Gate> {
+  async restart(): Promise<Tunnel> {
     await this.destroy();
-    return Gate.initialize(this.client, this.skappInfo, this.bridgeUrl, this.options);
+    return Tunnel.initialize(this.client, this.skappInfo, this.bridgeUrl, this.options);
   }
 
-  // =====================
-  // Internal Gate Methods
-  // =====================
+  // =======================
+  // Internal Tunnel Methods
+  // =======================
 
   // TODO: should check periodically if window is still open.
   /**

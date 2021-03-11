@@ -20,8 +20,8 @@ import {
 import { getJSON, setJSON } from "./skydb";
 import { getEntry, getEntryUrl, setEntry } from "./registry";
 import { addUrlQuery, defaultPortalUrl, makeUrl } from "./url";
-import { Gate } from "./interface";
-import type { CustomGateOptions, Interface } from "./interface";
+import { Tunnel } from "./interface";
+import type { CustomTunnelOptions, InterfaceInstance, MySkyInstance } from "./interface";
 
 /**
  * Custom client options.
@@ -90,37 +90,37 @@ export class SkynetClient {
   openFileHns = openFileHns;
   resolveHns = resolveHns;
 
-  // Gate
+  // Tunnel
 
-  protected clientGate?: Gate;
+  protected clientTunnel?: Tunnel;
 
-  gate = {
+  bridge = {
     destroy: async (): Promise<void> => {
-      if (!this.clientGate) {
-        throw new Error("Gate not initialized");
+      if (!this.clientTunnel) {
+        throw new Error("Tunnel not initialized");
       }
-      await this.clientGate.destroy();
-      this.clientGate = undefined;
+      await this.clientTunnel.destroy();
+      this.clientTunnel = undefined;
 
       return;
     },
 
-    initialize: async (skappInfo: SkappInfo, bridgeUrl: string, customOptions?: CustomGateOptions): Promise<void> => {
-      this.clientGate = await Gate.initialize(this, skappInfo, bridgeUrl, customOptions);
+    initialize: async (skappInfo: SkappInfo, bridgeUrl: string, customOptions?: CustomTunnelOptions): Promise<void> => {
+      this.clientTunnel = await Tunnel.initialize(this, skappInfo, bridgeUrl, customOptions);
     },
 
-    loadInterface: async (interfaceSchema: InterfaceSchema): Promise<Interface> => {
-      if (!this.clientGate) {
-        throw new Error("Gate not initialized");
+    loadInterface: async (interfaceSchema: InterfaceSchema): Promise<InterfaceInstance> => {
+      if (!this.clientTunnel) {
+        throw new Error("Tunnel not initialized");
       }
-      return this.clientGate.loadInterface(interfaceSchema);
+      return this.clientTunnel.loadInterface(interfaceSchema);
     },
 
-    loadMySky: async (interfaceSchema: InterfaceSchema): Promise<MySky> => {
-      if (!this.clientGate) {
-        throw new Error("Gate not initialized");
+    loadMySky: async (interfaceSchema: InterfaceSchema): Promise<MySkyInstance> => {
+      if (!this.clientTunnel) {
+        throw new Error("Tunnel not initialized");
       }
-      return this.clientGate.loadMySky(interfaceSchema);
+      return this.clientTunnel.loadMySky(interfaceSchema);
     },
   };
 
