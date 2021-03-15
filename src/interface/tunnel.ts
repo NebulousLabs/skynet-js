@@ -1,6 +1,6 @@
 import { ParentHandshake, WindowMessenger } from "post-me";
 import type { Connection } from "post-me";
-import { createIframe, ensureUrl, ProviderInfo } from "skynet-interface-utils";
+import { createIframe, defaultHandshakeAttemptsInterval, defaultHandshakeMaxAttempts, ensureUrl, ProviderInfo } from "skynet-interface-utils";
 import type { BridgeMetadata, InterfaceSchema, SkappInfo } from "skynet-interface-utils";
 import urljoin from "url-join";
 
@@ -14,8 +14,8 @@ export type CustomTunnelOptions = {
 };
 
 const defaultBridgeOptions = {
-  handshakeMaxAttempts: 20,
-  handshakeAttemptsInterval: 500,
+  handshakeMaxAttempts: defaultHandshakeMaxAttempts,
+  handshakeAttemptsInterval: defaultHandshakeAttemptsInterval,
 };
 
 export class Tunnel {
@@ -84,7 +84,12 @@ export class Tunnel {
     return loadedMySky;
   }
 
-  async callInterface(interfaceName: string, method: string, schema: InterfaceSchema, ...args: unknown[]): Promise<unknown> {
+  async callInterface(
+    interfaceName: string,
+    method: string,
+    schema: InterfaceSchema,
+    ...args: unknown[]
+  ): Promise<unknown> {
     // TODO: Add checks for valid parameters and return value. Should be in skynet-provider-utils and should check for reserved names.
 
     return this.bridgeConnection.remoteHandle().call("callInterface", interfaceName, method, args);
@@ -132,11 +137,17 @@ export class Tunnel {
   async loginPopup(interfaceName: string, opts: CustomConnectOptions): Promise<void> {
     // Launch router
 
-    await this.launchRouter(opts.defaultProviders);
+    const routerWindow = await this.launchRouter(opts.defaultProviders);
 
     // Wait for bridge to complete the connection.
 
-    return this.bridgeConnection.remoteHandle().call("loginPopup", interfaceName, opts);
+    return this.bridgeConnection
+      .remoteHandle()
+      .call("loginPopup", interfaceName, opts)
+      .catch((err) => {
+        routerWindow.close()
+        throw err;
+      });
   }
 
   async loginSilent(interfaceName: string): Promise<void> {
@@ -159,18 +170,18 @@ export class Tunnel {
   /**
    * Creates window with router and waits for a response.
    */
-  protected async launchRouter(defaultProviders: Array<ProviderInfo> | undefined): Promise<void> {
-    if (!defaultProviders) {
-      defaultProviders = [];
+  protected async launchRouter(providers: Array<ProviderInfo> | undefined): Promise<Window> {
+    if (!providers) {
+      providers = [];
     }
-    const defaultProvidersString = JSON.stringify(defaultProviders);
+    const providersString = JSON.stringify(providers);
 
     // Set the router URL.
     const bridgeMetadata = this.bridgeMetadata;
     let routerUrl = urljoin(this.bridgeUrl, bridgeMetadata.relativeRouterUrl);
-    routerUrl = `${routerUrl}?skappName=${this.skappInfo.name}&skappDomain=${this.skappInfo.domain}&defaultProviders=${defaultProvidersString}`;
+    routerUrl = `${routerUrl}?skappName=${this.skappInfo.name}&skappDomain=${this.skappInfo.domain}&providers=${providersString}`;
 
     // Open the router.
-    popupCenter(routerUrl, bridgeMetadata.routerName, bridgeMetadata.routerW, bridgeMetadata.routerH);
+    return popupCenter(routerUrl, bridgeMetadata.routerName, bridgeMetadata.routerW, bridgeMetadata.routerH);
   }
 }

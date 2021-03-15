@@ -6,11 +6,11 @@ import { InterfaceSchema, ProviderInfo } from "skynet-interface-utils";
 import { Tunnel } from "./tunnel";
 
 export type CustomConnectOptions = {
-  defaultProviders?: Array<ProviderInfo>;
+  providers?: Array<ProviderInfo>;
 };
 
 const defaultConnectOptions = {
-  defaultProviders: [],
+  providers: [],
 };
 
 class BaseInterfaceInstance {
@@ -23,7 +23,6 @@ class BaseInterfaceInstance {
 }
 
 export class InterfaceInstance extends BaseInterfaceInstance {
-
   constructor(tunnel: Tunnel, schema: InterfaceSchema) {
     super(tunnel, schema);
 
@@ -34,7 +33,7 @@ export class InterfaceInstance extends BaseInterfaceInstance {
       const opts = { ...defaultConnectOptions, ...customOptions };
 
       await tunnel.connectPopup(schema.name, opts);
-    }
+    };
     this.connectSilent = async () => tunnel.connectSilent(schema.name);
     this.disconnect = async () => tunnel.disconnect(schema.name);
   }
@@ -50,11 +49,11 @@ export class MySkyInstance extends BaseInterfaceInstance {
     // Add these methods dynamically at runtime (we can't do it at compile-time
     // because we need a reference to the tunnel, and we can't have one in the
     // class because of the index signature.)
-    this.loginPopup = async (customOptions: CustomConnectOptions) => {
+    this.loginPopup = async (customOptions?: CustomConnectOptions) => {
       const opts = { ...defaultConnectOptions, ...customOptions };
 
       await tunnel.loginPopup(schema.name, opts);
-    }
+    };
     this.loginSilent = async () => tunnel.loginSilent(schema.name);
     this.logout = async () => tunnel.logout(schema.name);
   }
