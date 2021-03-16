@@ -1,4 +1,4 @@
-import type { InterfaceSchema, SkappInfo } from "skynet-interface-utils";
+import type { Schema } from "skynet-interface-utils";
 
 import axios, { AxiosResponse } from "axios";
 import type { Method } from "axios";
@@ -20,8 +20,8 @@ import {
 import { getJSON, setJSON } from "./skydb";
 import { getEntry, getEntryUrl, setEntry } from "./registry";
 import { addUrlQuery, defaultPortalUrl, makeUrl } from "./url";
-import { Tunnel } from "./interface";
-import type { CustomTunnelOptions, InterfaceInstance, MySkyInstance } from "./interface";
+import { Tunnel } from "./dac";
+import type { CustomTunnelOptions, DacInstance, MySkyInstance } from "./dac";
 
 /**
  * Custom client options.
@@ -71,12 +71,14 @@ export class SkynetClient {
   // Set methods (defined in other files).
 
   // Upload
+
   uploadFile = uploadFile;
   protected uploadFileRequest = uploadFileRequest;
   uploadDirectory = uploadDirectory;
   protected uploadDirectoryRequest = uploadDirectoryRequest;
 
   // Download
+
   downloadFile = downloadFile;
   downloadFileHns = downloadFileHns;
   getSkylinkUrl = getSkylinkUrl;
@@ -94,43 +96,51 @@ export class SkynetClient {
 
   protected clientTunnel?: Tunnel;
 
-  bridge = {
-    destroy: async (): Promise<void> => {
-      if (!this.clientTunnel) {
-        throw new Error("Tunnel not initialized");
-      }
-      await this.clientTunnel.destroy();
-      this.clientTunnel = undefined;
-
+  destroyBridge = async (): Promise<void> => {
+    if (!this.clientTunnel) {
       return;
-    },
+    }
+    await this.clientTunnel.destroy();
+    this.clientTunnel = undefined;
 
-    initialize: async (skappInfo: SkappInfo, bridgeUrl: string, customOptions?: CustomTunnelOptions): Promise<void> => {
-      this.clientTunnel = await Tunnel.initialize(this, skappInfo, bridgeUrl, customOptions);
-    },
+    return;
+  };
 
-    loadInterface: async (interfaceSchema: InterfaceSchema): Promise<InterfaceInstance> => {
-      if (!this.clientTunnel) {
-        throw new Error("Tunnel not initialized");
-      }
-      return this.clientTunnel.loadInterface(interfaceSchema);
-    },
+  initialize = async (customOptions?: CustomTunnelOptions): Promise<void> => {
+    this.clientTunnel = await Tunnel.initialize(this, customOptions);
+  };
 
-    loadMySky: async (interfaceSchema: InterfaceSchema): Promise<MySkyInstance> => {
-      if (!this.clientTunnel) {
-        throw new Error("Tunnel not initialized");
-      }
-      return this.clientTunnel.loadMySky(interfaceSchema);
-    },
+  load = async (interfaceSchema: Schema): Promise<DacInstance> => {
+    // Initialize the DAC when it's required.
+    if (!this.clientTunnel) {
+      await this.initialize();
+    }
+    if (!this.clientTunnel) {
+      throw new Error("Tunnel not initialized");
+    }
+    return this.clientTunnel.load(interfaceSchema);
+  };
+
+  loadMySky = async (): Promise<MySkyInstance> => {
+    // Initialize the DAC when it's required.
+    if (!this.clientTunnel) {
+      await this.initialize();
+    }
+    if (!this.clientTunnel) {
+      throw new Error("Tunnel not initialized");
+    }
+    return this.clientTunnel.loadMySky();
   };
 
   // SkyDB
+
   db = {
     getJSON: getJSON.bind(this),
     setJSON: setJSON.bind(this),
   };
 
   // SkyDB helpers
+
   registry = {
     getEntry: getEntry.bind(this),
     getEntryUrl: getEntryUrl.bind(this),

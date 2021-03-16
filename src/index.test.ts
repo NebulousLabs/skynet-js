@@ -22,11 +22,10 @@ describe("SkynetClient", () => {
     expect(client).toHaveProperty("uploadDirectory");
 
     // Bridge
-    expect(client).toHaveProperty("bridge");
-    expect(client.bridge).toHaveProperty("destroy");
-    expect(client.bridge).toHaveProperty("initialize");
-    expect(client.bridge).toHaveProperty("loadInterface");
-    expect(client.bridge).toHaveProperty("loadMySky");
+    expect(client).toHaveProperty("destroyBridge");
+    expect(client).toHaveProperty("initialize");
+    expect(client).toHaveProperty("load");
+    expect(client).toHaveProperty("loadMySky");
 
     // SkyDB
     expect(client).toHaveProperty("db");

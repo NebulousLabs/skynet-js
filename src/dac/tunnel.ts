@@ -1,19 +1,25 @@
 import { ParentHandshake, WindowMessenger } from "post-me";
 import type { Connection } from "post-me";
-import { createIframe, defaultHandshakeAttemptsInterval, defaultHandshakeMaxAttempts, ensureUrl, ProviderInfo } from "skynet-interface-utils";
-import type { BridgeMetadata, InterfaceSchema, SkappInfo } from "skynet-interface-utils";
+import { createIframe, defaultHandshakeAttemptsInterval, defaultHandshakeMaxAttempts, ensureUrl, ProviderInfo, SkappInfo } from "skynet-interface-utils";
+import type { BridgeMetadata, Schema } from "skynet-interface-utils";
 import urljoin from "url-join";
 
-import { CustomConnectOptions, InterfaceInstance, MySkyInstance } from ".";
+import { CustomConnectOptions } from ".";
+import { DacInstance } from "./instance";
+import { MySkyInstance } from "./mysky";
 import { SkynetClient } from "../client";
 import { popupCenter } from "./utils";
 
+export const defaultBridgeUrl = "hns:skynetbridge";
+
 export type CustomTunnelOptions = {
+  bridgeUrl?: string;
   handshakeMaxAttempts?: number;
   handshakeAttemptsInterval?: number;
 };
 
 const defaultBridgeOptions = {
+  bridgeUrl: defaultBridgeUrl,
   handshakeMaxAttempts: defaultHandshakeMaxAttempts,
   handshakeAttemptsInterval: defaultHandshakeAttemptsInterval,
 };
@@ -35,8 +41,6 @@ export class Tunnel {
 
   static async initialize(
     client: SkynetClient,
-    skappInfo: SkappInfo,
-    bridgeUrl: string,
     customOptions?: CustomTunnelOptions
   ): Promise<Tunnel> {
     if (typeof Storage == "undefined") {
@@ -46,7 +50,13 @@ export class Tunnel {
     const opts = { ...defaultBridgeOptions, ...customOptions };
 
     // Initialize state.
-    bridgeUrl = ensureUrl(bridgeUrl);
+    let bridgeUrl;
+    if (opts.bridgeUrl.startsWith("hns:")) {
+      bridgeUrl = client.getHnsUrl(opts.bridgeUrl, { subdomain: true });
+    } else {
+      bridgeUrl = client.getSkylinkUrl(opts.bridgeUrl, { subdomain: true });
+    }
+    const skappInfo = new SkappInfo(location.hostname);
 
     // Create the iframe.
     const childFrame = createIframe(bridgeUrl, bridgeUrl);
@@ -66,56 +76,58 @@ export class Tunnel {
     return new Tunnel(client, skappInfo, bridgeUrl, bridgeMetadata, childFrame, connection, opts);
   }
 
-  // ===============
+  // =================
   // Public Tunnel API
-  // ===============
+  // =================
 
-  async loadInterface(schema: InterfaceSchema): Promise<InterfaceInstance> {
-    const loadedInterface = new InterfaceInstance(this, schema);
-    return loadedInterface;
+  async load(schema: Schema): Promise<DacInstance> {
+    const loadedDac = new DacInstance(this, schema);
+    return loadedDac;
   }
 
-  async loadMySky(schema: InterfaceSchema): Promise<MySkyInstance> {
-    if (!schema.mysky) {
-      throw new Error("Given schema is not a mysky schema");
-    }
-
-    const loadedMySky = new MySkyInstance(this, schema);
+  async loadMySky(): Promise<MySkyInstance> {
+    const loadedMySky = new MySkyInstance(this);
     return loadedMySky;
   }
 
-  async callInterface(
-    interfaceName: string,
+  async call(
+    dacName: string,
     method: string,
-    schema: InterfaceSchema,
+    _schema: Schema,
     ...args: unknown[]
   ): Promise<unknown> {
     // TODO: Add checks for valid parameters and return value. Should be in skynet-provider-utils and should check for reserved names.
 
-    return this.bridgeConnection.remoteHandle().call("callInterface", interfaceName, method, args);
+    return this.bridgeConnection.remoteHandle().call("call", dacName, method, args);
   }
 
-  async connectPopup(interfaceName: string, opts: CustomConnectOptions): Promise<void> {
+  async connectPopup(dacName: string, opts: CustomConnectOptions): Promise<void> {
     // Launch router
 
-    this.launchRouter(opts.defaultProviders);
+    this.launchRouter(opts.providers);
 
     // Wait for bridge to complete the connection.
 
-    return this.bridgeConnection.remoteHandle().call("connectPopup", interfaceName, opts);
+    return this.bridgeConnection.remoteHandle().call("connectPopup", dacName, opts);
   }
 
-  async connectSilent(interfaceName: string): Promise<void> {
-    await this.bridgeConnection.remoteHandle().call("connectSilent", interfaceName);
+  async connectSilent(dacName: string): Promise<void> {
+    await this.bridgeConnection.remoteHandle().call("connectSilent", dacName);
   }
 
   /**
-   * Destroys the bridge by: 1. unloading the providers on the bridge, 2. closing the bridge connection, 3. closing the child iframe
+   * Destroys the bridge by:
+   *
+   * 1. unloading the providers on the bridge,
+   *
+   * 2. closing the bridge connection,
+   *
+   * 3. closing the child iframe
    */
   async destroy(): Promise<void> {
-    // TODO: For all connected interfaces, send a destroyProvider call.
+    // TODO: For all connected dacs, send a destroyProvider call.
 
-    // TODO: Delete all connected interfaces.
+    // TODO: Delete all connected dacs.
 
     // Close the bridge connection.
     this.bridgeConnection.close();
@@ -126,32 +138,32 @@ export class Tunnel {
     }
   }
 
-  async disconnect(interfaceName: string): Promise<void> {
-    await this.bridgeConnection.remoteHandle().call("disconnect", interfaceName);
+  async disconnect(dacName: string): Promise<void> {
+    await this.bridgeConnection.remoteHandle().call("disconnect", dacName);
   }
 
-  async logout(interfaceName: string): Promise<void> {
-    await this.bridgeConnection.remoteHandle().call("logout", interfaceName);
+  async logout(dacName: string): Promise<void> {
+    await this.bridgeConnection.remoteHandle().call("logout", dacName);
   }
 
-  async loginPopup(interfaceName: string, opts: CustomConnectOptions): Promise<void> {
+  async loginPopup(dacName: string, opts: CustomConnectOptions): Promise<void> {
     // Launch router
 
-    const routerWindow = await this.launchRouter(opts.defaultProviders);
+    const routerWindow = await this.launchRouter(opts.providers);
 
     // Wait for bridge to complete the connection.
 
     return this.bridgeConnection
       .remoteHandle()
-      .call("loginPopup", interfaceName, opts)
+      .call("loginPopup", dacName, opts)
       .catch((err) => {
         routerWindow.close()
         throw err;
       });
   }
 
-  async loginSilent(interfaceName: string): Promise<void> {
-    await this.bridgeConnection.remoteHandle().call("loginSilent", interfaceName);
+  async loginSilent(dacName: string): Promise<void> {
+    await this.bridgeConnection.remoteHandle().call("loginSilent", dacName);
   }
 
   /**
@@ -159,7 +171,7 @@ export class Tunnel {
    */
   async restart(): Promise<Tunnel> {
     await this.destroy();
-    return Tunnel.initialize(this.client, this.skappInfo, this.bridgeUrl, this.options);
+    return Tunnel.initialize(this.client, this.options);
   }
 
   // =======================
@@ -179,7 +191,8 @@ export class Tunnel {
     // Set the router URL.
     const bridgeMetadata = this.bridgeMetadata;
     let routerUrl = urljoin(this.bridgeUrl, bridgeMetadata.relativeRouterUrl);
-    routerUrl = `${routerUrl}?skappName=${this.skappInfo.name}&skappDomain=${this.skappInfo.domain}&providers=${providersString}`;
+    const skappInfoString = JSON.stringify(this.skappInfo);
+    routerUrl = `${routerUrl}?skappInfo=${skappInfoString}&providers=${providersString}`;
 
     // Open the router.
     return popupCenter(routerUrl, bridgeMetadata.routerName, bridgeMetadata.routerW, bridgeMetadata.routerH);
