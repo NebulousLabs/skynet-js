@@ -98,7 +98,7 @@ export class Tunnel {
   async call(dacName: string, method: string, _schema: Schema, ...args: unknown[]): Promise<unknown> {
     // TODO: Add checks for valid parameters and return value. Should be in skynet-provider-utils and should check for reserved names.
 
-    return this.bridgeConnection.remoteHandle().call("call", dacName, method, args);
+    return this.bridgeConnection.remoteHandle().call("call", dacName, method, ...args);
   }
 
   async connectPopup(dacName: string, opts: CustomConnectOptions): Promise<void> {

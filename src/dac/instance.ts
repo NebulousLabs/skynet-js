@@ -33,7 +33,7 @@ function addMethods(instance: BaseDacInstance, tunnel: Tunnel, schema: Schema) {
   for (let [name, _schema] of Object.entries(schema.methods)) {
     // Use arrow function for lexical resolution of 'this'.
     const method = async (...args: unknown[]): Promise<unknown> => {
-      return tunnel.call(schema.name, name, schema, args);
+      return tunnel.call(schema.name, name, schema, ...args);
     };
 
     instance[name] = method;
