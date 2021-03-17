@@ -1,6 +1,13 @@
 import { ParentHandshake, WindowMessenger } from "post-me";
 import type { Connection } from "post-me";
-import { createIframe, defaultHandshakeAttemptsInterval, defaultHandshakeMaxAttempts, ensureUrl, ProviderInfo, SkappInfo } from "skynet-interface-utils";
+import {
+  createIframe,
+  defaultHandshakeAttemptsInterval,
+  defaultHandshakeMaxAttempts,
+  ensureUrl,
+  ProviderInfo,
+  SkappInfo,
+} from "skynet-interface-utils";
 import type { BridgeMetadata, Schema } from "skynet-interface-utils";
 import urljoin from "url-join";
 
@@ -39,10 +46,7 @@ export class Tunnel {
     public options: CustomTunnelOptions
   ) {}
 
-  static async initialize(
-    client: SkynetClient,
-    customOptions?: CustomTunnelOptions
-  ): Promise<Tunnel> {
+  static async initialize(client: SkynetClient, customOptions?: CustomTunnelOptions): Promise<Tunnel> {
     if (typeof Storage == "undefined") {
       throw new Error("Browser does not support web storage");
     }
@@ -91,12 +95,7 @@ export class Tunnel {
     return loadedMySky;
   }
 
-  async call(
-    dacName: string,
-    method: string,
-    _schema: Schema,
-    ...args: unknown[]
-  ): Promise<unknown> {
+  async call(dacName: string, method: string, _schema: Schema, ...args: unknown[]): Promise<unknown> {
     // TODO: Add checks for valid parameters and return value. Should be in skynet-provider-utils and should check for reserved names.
 
     return this.bridgeConnection.remoteHandle().call("call", dacName, method, args);
@@ -158,7 +157,7 @@ export class Tunnel {
       .remoteHandle()
       .call("loginPopup", dacName, opts)
       .catch((err) => {
-        routerWindow.close()
+        routerWindow.close();
         throw err;
       });
   }

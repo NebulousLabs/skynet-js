@@ -43,9 +43,7 @@ describe(`Integration test for portal ${portal}`, () => {
     });
 
     // Regression test: Use some strange data keys that have failed in previous versions.
-    const dataKeys = [
-      ".", "..", "http://localhost:8000/", ""
-    ];
+    const dataKeys = [".", "..", "http://localhost:8000/", ""];
 
     it.each(dataKeys)("Should set and get new entry with dataKey %s", async (dk) => {
       const { publicKey, privateKey } = genKeyPairAndSeed();
