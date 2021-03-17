@@ -51,6 +51,7 @@ export class Tunnel {
 
     // Initialize state.
     let bridgeUrl;
+    // TODO: Replace with Async versions.
     if (opts.bridgeUrl.startsWith("hns:")) {
       bridgeUrl = client.getHnsUrl(opts.bridgeUrl, { subdomain: true });
     } else {

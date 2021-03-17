@@ -14,6 +14,7 @@ import {
 } from "./utils";
 import { CustomUploadOptions, UploadRequestResponse } from "./upload";
 import { CustomDownloadOptions } from "./download";
+import { hashDataKey } from "./crypto";
 
 /**
  * Custom get JSON options.
@@ -108,7 +109,10 @@ export async function setJSON(
   };
 
   // Create the data to upload to acquire its skylink.
-  const file = new File([JSON.stringify(json)], dataKey, { type: "application/json" });
+  //
+  // Use a hash of the data key for the filename to get around siapath restrictions and to avoid exposing it.
+  const dataKeyHash = toHexString(hashDataKey(dataKey));
+  const file = new File([JSON.stringify(json)], dataKeyHash, { type: "application/json" });
 
   // Start file upload, do not block.
   const skyfilePromise: Promise<UploadRequestResponse> = this.uploadFile(file, opts);
