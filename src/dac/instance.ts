@@ -31,7 +31,6 @@ export class DacInstance extends BaseDacInstance {
 function addMethods(instance: BaseDacInstance, tunnel: Tunnel, schema: Schema) {
   // Add each method in the schema to the exposed interface.
   for (let [name, _schema] of Object.entries(schema.methods)) {
-    // Use arrow function for lexical resolution of 'this'.
     const method = async (...args: unknown[]): Promise<unknown> => {
       return tunnel.call(schema.name, name, schema, ...args);
     };

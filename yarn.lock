@@ -7,8 +7,6 @@
   "resolved" "https://registry.npmjs.org/@babel/cli/-/cli-7.13.0.tgz"
   "version" "7.13.0"
   dependencies:
-    "@nicolo-ribaudo/chokidar-2" "2.1.8-no-fsevents"
-    "chokidar" "^3.4.0"
     "commander" "^4.0.1"
     "convert-source-map" "^1.1.0"
     "fs-readdir-recursive" "^1.1.0"
@@ -697,7 +695,7 @@
 
 "@babel/plugin-transform-runtime@^7.11.5":
   "integrity" "sha512-Y5k8ipgfvz5d/76tx7JYbKQTcgFSU6VgJ3kKQv4zGTKr+a9T/KBvfRvGtSFgKDQGt/DBykQixV0vNWKIdzWErA=="
-  "resolved" "https://registry.yarnpkg.com/@babel/plugin-transform-runtime/-/plugin-transform-runtime-7.13.10.tgz"
+  "resolved" "https://registry.npmjs.org/@babel/plugin-transform-runtime/-/plugin-transform-runtime-7.13.10.tgz"
   "version" "7.13.10"
   dependencies:
     "@babel/helper-module-imports" "^7.12.13"
@@ -1046,7 +1044,6 @@
     "jest-resolve" "^26.6.2"
     "jest-util" "^26.6.2"
     "jest-worker" "^26.6.2"
-    "node-notifier" "^8.0.0"
     "slash" "^3.0.0"
     "source-map" "^0.6.0"
     "string-length" "^4.0.1"
@@ -2017,7 +2014,6 @@
   dependencies:
     "anymatch" "~3.1.1"
     "braces" "~3.0.2"
-    "fsevents" "~2.3.1"
     "glob-parent" "~5.1.0"
     "is-binary-path" "~2.1.0"
     "is-glob" "~4.0.1"
@@ -2444,7 +2440,6 @@
     "estraverse" "^4.2.0"
     "esutils" "^2.0.2"
     "optionator" "^0.8.1"
-    "source-map" "~0.6.1"
   optionalDependencies:
     "source-map" "~0.6.1"
 
@@ -3082,7 +3077,7 @@
 
 "husky@^5.0.9":
   "integrity" "sha512-fbNJ+Gz5wx2LIBtMweJNY1D7Uc8p1XERi5KNRMccwfQA+rXlxWNSdUxswo0gT8XqxywTIw7Ywm/F4v/O35RdMg=="
-  "resolved" "https://registry.yarnpkg.com/husky/-/husky-5.1.3.tgz"
+  "resolved" "https://registry.npmjs.org/husky/-/husky-5.1.3.tgz"
   "version" "5.1.3"
 
 "iconv-lite@0.4.24":
@@ -3542,7 +3537,6 @@
     "@types/node" "*"
     "anymatch" "^3.0.3"
     "fb-watchman" "^2.0.0"
-    "fsevents" "^2.1.2"
     "graceful-fs" "^4.2.4"
     "jest-regex-util" "^26.0.0"
     "jest-serializer" "^26.6.2"
@@ -5616,7 +5610,7 @@
 
 "url-parse@1.4.7":
   "integrity" "sha512-d3uaVyzDB9tQoSXFvuSUNFibTd9zxd2bkVrDRvF5TmvWWQwqE4lgYJ5m+x1DbecWkw+LK4RNl2CU1hHuOKPVlg=="
-  "resolved" "https://registry.yarnpkg.com/url-parse/-/url-parse-1.4.7.tgz"
+  "resolved" "https://registry.npmjs.org/url-parse/-/url-parse-1.4.7.tgz"
   "version" "1.4.7"
   dependencies:
     "querystringify" "^2.1.1"
