@@ -1,6 +1,6 @@
 # skynet-js - Javascript Sia Skynet Client
 
-> :warning: This repo has been archived and moved under the new [SkynetHQ](https://github.com/SkynetHQ) repo [here](https://github.com/SkynetHQ/skynet-js)
+> :warning: This repo has been archived and moved under the new [SkynetLabs](https://github.com/SkynetLabs) repo [here](https://github.com/SkynetLabs/skynet-js)
 
 [![Version](https://img.shields.io/github/package-json/v/NebulousLabs/skynet-js)](https://www.npmjs.com/package/skynet-js)
 [![Build Status](https://img.shields.io/github/workflow/status/NebulousLabs/skynet-js/Node.js%20CI)](https://github.com/NebulousLabs/skynet-js/actions)
